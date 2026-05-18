@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Interactive Demo - OddSockets JavaScript SDK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-bg: #fafafa;
+            --color-surface: #ffffff;
+            --color-border: #e5e7eb;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6b7280;
+            --color-text-muted: #9ca3af;
+            --color-accent: #3b82f6;
+            --color-accent-light: #dbeafe;
+            --color-success: #10b981;
+            --color-success-light: #d1fae5;
+            --color-warning: #f59e0b;
+            --color-warning-light: #fef3c7;
+            --color-error: #ef4444;
+            --color-error-light: #fee2e2;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --border-radius: 8px;
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+            background: var(--color-bg);
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: var(--spacing-xl);
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+        .back-link i {
+            margin-right: var(--spacing-sm);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .header-icon {
+            color: var(--color-accent);
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .signup-panel {
+            background: var(--color-accent-light);
+            border: 1px solid #93c5fd;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .signup-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            font-size: 1.125rem;
+        }
+
+        .signup-text {
+            color: #1e40af;
+            font-size: 0.875rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .signup-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background: var(--color-accent);
+            color: white;
+            text-decoration: none;
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .signup-button:hover {
+            background: #2563eb;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .debug-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .debug-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .debug-controls {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .debug-output {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            line-height: 1.4;
+            height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid #334155;
+        }
+
+        .json-key {
+            color: #60a5fa;
+        }
+
+        .json-string {
+            color: #34d399;
+        }
+
+        .json-number {
+            color: #fbbf24;
+        }
+
+        .json-boolean {
+            color: #f87171;
+        }
+
+        .json-null {
+            color: #9ca3af;
+        }
+
+        .demo-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .demo-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .demo-controls {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .control-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .control-label {
+            display: block;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-xs);
+            font-size: 0.875rem;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px var(--color-accent-light);
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: var(--color-warning);
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        .btn-error {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .btn-error:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .output-area {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            min-height: 300px;
+            overflow-y: auto;
+            flex-grow: 1;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .status-connected {
+            background: var(--color-success-light);
+            color: #065f46;
+        }
+
+        .status-disconnected {
+            background: var(--color-error-light);
+            color: #991b1b;
+        }
+
+        .status-connecting {
+            background: var(--color-warning-light);
+            color: #92400e;
+        }
+
+        .message-item {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .message-from {
+            font-weight: 600;
+            color: var(--color-accent);
+            font-size: 0.875rem;
+        }
+
+        .message-time {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+        }
+
+        .message-content {
+            color: var(--color-text-primary);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-lg) var(--spacing-sm);
+            }
+
+            .header h1 {
+                font-size: 2rem;
+                flex-direction: column;
+            }
+
+            .demo-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+        }
+
+        /* Animation for connecting status */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-connecting {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to Examples
+        </a>
+        
+        <div class="header">
+            <h1>
+                <i class="fas fa-play-circle header-icon"></i>
+                Live Interactive Demo
+            </h1>
+            <p>Try the OddSockets JavaScript SDK directly in your browser with real connections</p>
+        </div>
+
+        <div class="signup-panel">
+            <div class="signup-title">
+                <i class="fas fa-key"></i>
+                Need an API Key?
+            </div>
+            <div class="signup-text">
+                This demo uses the real OddSockets JavaScript SDK from CDN. You'll need a valid API key to connect to the OddSockets platform.
+            </div>
+            <a href="https://oddsockets.com/signup" target="_blank" class="signup-button">
+                <i class="fas fa-external-link-alt"></i>
+                Get Your API Key
+            </a>
+        </div>
+
+        <!-- Debug Console Panel -->
+        <div class="debug-panel">
+            <h2 class="debug-title">
+                <i class="fas fa-bug"></i>
+                Real-Time Debug Console
+            </h2>
+            
+            <div class="debug-controls">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="toggleDebug()" id="debugToggle">
+                        <i class="fas fa-eye"></i>
+                        Enable Debug
+                    </button>
+                    <button class="btn btn-warning" onclick="clearDebug()">
+                        <i class="fas fa-broom"></i>
+                        Clear Console
+                    </button>
+                </div>
+            </div>
+            
+            <div class="debug-output" id="debugOutput">Debug mode disabled. Click "Enable Debug" to see real-time JSON responses from the SDK.
+
+This console will show:
+• WebSocket connection messages
+• API responses and requests
+• Channel subscription data
+• Message publish/receive events
+• Error responses
+• Presence change notifications
+
+All data is formatted as JSON for easy inspection.</div>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Basic Usage Demo -->
+            <div class="demo-panel">
+                <h2 class="demo-title">
+                    <i class="fas fa-rocket"></i>
+                    Basic Usage Demo
+                </h2>
+                
+                <div class="demo-controls">
+                    <div class="control-group">
+                        <label class="control-label">API Key</label>
+                        <input type="text" class="control-input" id="apiKey" value="ak_mfmkde2e_35e4c5d98531551" placeholder="Enter your OddSockets API key">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">User ID (optional)</label>
+                        <input type="text" class="control-input" id="userId" placeholder="Enter user ID">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Channel Name</label>
+                        <input type="text" class="control-input" id="channelName" value="demo-channel" placeholder="Enter channel name">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Manager URL (optional - for custom endpoints)</label>
+                        <input type="text" class="control-input" id="managerUrl" placeholder="e.g., http://localhost:3001 or https://your-manager.com">
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="connectClient()" id="connectBtn">
+                            <i class="fas fa-plug"></i>
+                            Connect
+                        </button>
+                        <button class="btn btn-success" onclick="subscribeChannel()" id="subscribeBtn" disabled>
+                            <i class="fas fa-broadcast-tower"></i>
+                            Subscribe
+                        </button>
+                        <button class="btn btn-warning" onclick="disconnectClient()" id="disconnectBtn" disabled>
+                            <i class="fas fa-times"></i>
+                            Disconnect
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="connectionStatus" class="status-indicator status-disconnected">
+                    <i class="fas fa-circle"></i>
+                    Disconnected
+                </div>
+                
+                <div class="output-area" id="basicOutput">Welcome to OddSockets Live Demo!
+
+This demo uses the REAL OddSockets JavaScript SDK from CDN.
+
+To get started:
+1. Get your API key from https://oddsockets.com/signup
+2. Enter your API key above
+3. Click "Connect" to establish a real connection
+4. Subscribe to a channel to start receiving messages
+
+Features you can test:
+• Real client connection to OddSockets platform
+• Actual channel subscription and management
+• Live message publishing and receiving
+• Presence tracking and user management
+• Error handling and reconnection</div>
+            </div>
+
+            <!-- Chat Demo -->
+            <div class="demo-panel">
+                <h2 class="demo-title">
+                    <i class="fas fa-comments"></i>
+                    Live Chat Demo
+                </h2>
+                
+                <div class="demo-controls">
+                    <div class="control-group">
+                        <label class="control-label">Your Message</label>
+                        <input type="text" class="control-input" id="messageInput" placeholder="Type your message..." onkeypress="handleMessageKeyPress(event)">
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="sendMessage()" id="sendBtn" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                        <button class="btn btn-success" onclick="getHistory()" id="historyBtn" disabled>
+                            <i class="fas fa-history"></i>
+                            Get History
+                        </button>
+                        <button class="btn btn-warning" onclick="clearMessages()">
+                            <i class="fas fa-trash"></i>
+                            Clear Messages
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="messagesContainer" style="max-height: 300px; overflow-y: auto; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--border-radius); padding: var(--spacing-md);">
+                    <div style="text-align: center; color: var(--color-text-muted); font-style: italic; padding: var(--spacing-lg);">
+                        Connect and subscribe to start chatting!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load OddSockets SDK from CDN -->
+    <script src="https://prodmedia.tyga.host/public/npm/@oddsocketsai/javascript-sdk@latest/dist/oddsockets.min.js"></script>
+
+    <script>
+        // Use the actual OddSockets SDK from CDN
+        // The SDK is now available as window.OddSockets
+        
+        // Demo application logic
+        let client = null;
+        let currentChannel = null;
+        let isConnected = false;
+        let isSubscribed = false;
+        let debugEnabled = false;
+
+        // Debug console functions
+        function toggleDebug() {
+            debugEnabled = !debugEnabled;
+            const toggleBtn = document.getElementById('debugToggle');
+            const debugOutput = document.getElementById('debugOutput');
+            
+            if (debugEnabled) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Disable Debug';
+                toggleBtn.className = 'btn btn-error';
+                debugOutput.textContent = 'Debug mode enabled. Waiting for SDK events...\n\n';
+                debugLog('🐛 Debug mode enabled', 'system');
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Enable Debug';
+                toggleBtn.className = 'btn btn-primary';
+                debugOutput.textContent = 'Debug mode disabled. Click "Enable Debug" to see real-time JSON responses from the SDK.\n\nThis console will show:\n• WebSocket connection messages\n• API responses and requests\n• Channel subscription data\n• Message publish/receive events\n• Error responses\n• Presence change notifications\n\nAll data is formatted as JSON for easy inspection.';
+            }
+        }
+
+        function clearDebug() {
+            const debugOutput = document.getElementById('debugOutput');
+            if (debugEnabled) {
+                debugOutput.textContent = 'Debug console cleared.\n\n';
+                debugLog('🧹 Debug console cleared', 'system');
+            } else {
+                debugOutput.textContent = 'Debug mode disabled. Click "Enable Debug" to see real-time JSON responses from the SDK.\n\nThis console will show:\n• WebSocket connection messages\n• API responses and requests\n• Channel subscription data\n• Message publish/receive events\n• Error responses\n• Presence change notifications\n\nAll data is formatted as JSON for easy inspection.';
+            }
+        }
+
+        function debugLog(message, type = 'info', data = null) {
+            if (!debugEnabled) return;
+            
+            const debugOutput = document.getElementById('debugOutput');
+            const timestamp = new Date().toISOString();
+            
+            let logEntry = `[${timestamp}] ${message}\n`;
+            
+            if (data) {
+                logEntry += formatJSON(data) + '\n';
+            }
+            
+            logEntry += '\n';
+            debugOutput.textContent += logEntry;
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+
+        function formatJSON(obj) {
+            try {
+                const jsonString = JSON.stringify(obj, null, 2);
+                return jsonString
+                    .replace(/"([^"]+)":/g, '<span class="json-key">"$1":</span>')
+                    .replace(/: "([^"]*)"/g, ': <span class="json-string">"$1"</span>')
+                    .replace(/: (\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+                    .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                    .replace(/: null/g, ': <span class="json-null">null</span>');
+            } catch (e) {
+                return String(obj);
+            }
+        }
+
+        function updateStatus(status, text) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `status-indicator status-${status}`;
+            
+            const icons = {
+                connected: 'fas fa-check-circle',
+                disconnected: 'fas fa-times-circle',
+                connecting: 'fas fa-spinner fa-spin'
+            };
+            
+            statusEl.innerHTML = `<i class="${icons[status]}"></i> ${text}`;
+        }
+
+        function log(message, outputId = 'basicOutput') {
+            const output = document.getElementById(outputId);
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `\n[${timestamp}] ${message}`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function connectClient() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+            
+            if (!apiKey) {
+                alert('Please enter your API key. Get one at https://oddsockets.com/signup');
+                return;
+            }
+            
+            try {
+                document.getElementById('connectBtn').disabled = true;
+                updateStatus('connecting', 'Connecting...');
+                
+                log('🚀 Starting OddSockets client with REAL CDN SDK...');
+                log(`📋 API Key: ${apiKey.substring(0, 12)}...`);
+                if (userId) log(`👤 User ID: ${userId}`);
+                
+                const config = {
+                    apiKey: apiKey
+                };
+                
+                if (userId) {
+                    config.userId = userId;
+                }
+                
+                // Use the actual OddSockets SDK from CDN
+                client = new window.OddSockets(config);
+                
+                client.on('connecting', () => {
+                    log('� Connecting to OddSockets...');
+                    debugLog('🔄 CLIENT EVENT: connecting', 'event');
+                });
+                
+                client.on('connected', (data) => {
+                    log('✅ Connected to OddSockets!');
+                    debugLog('✅ CLIENT EVENT: connected', 'event', data);
+                    isConnected = true;
+                    updateStatus('connected', 'Connected');
+                    document.getElementById('subscribeBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = false;
+                });
+                
+                client.on('worker_assigned', (data) => {
+                    log(`🎯 Assigned to worker: ${data.workerId}`);
+                    debugLog('🎯 CLIENT EVENT: worker_assigned', 'event', data);
+                });
+                
+                client.on('error', (error) => {
+                    const errorMessage = getDetailedErrorMessage(error);
+                    log(`❌ Connection error: ${errorMessage}`);
+                    debugLog('❌ CLIENT EVENT: error', 'error', error);
+                    updateStatus('disconnected', 'Error');
+                    document.getElementById('connectBtn').disabled = false;
+                });
+                
+                client.on('disconnected', (reason) => {
+                    log(`🔌 Disconnected: ${reason}`);
+                    debugLog('🔌 CLIENT EVENT: disconnected', 'event', { reason });
+                    isConnected = false;
+                    isSubscribed = false;
+                    updateStatus('disconnected', 'Disconnected');
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('subscribeBtn').disabled = true;
+                    document.getElementById('sendBtn').disabled = true;
+                    document.getElementById('historyBtn').disabled = true;
+                });
+
+                // Add more comprehensive event listeners for debugging
+                client.on('message', (data) => {
+                    debugLog('📨 CLIENT EVENT: message', 'event', data);
+                });
+
+                client.on('websocket_open', (data) => {
+                    debugLog('🔗 WEBSOCKET EVENT: open', 'websocket', data);
+                });
+
+                client.on('websocket_close', (data) => {
+                    debugLog('🔗 WEBSOCKET EVENT: close', 'websocket', data);
+                });
+
+                client.on('websocket_message', (data) => {
+                    debugLog('📡 WEBSOCKET EVENT: message', 'websocket', data);
+                });
+
+                client.on('api_request', (data) => {
+                    debugLog('📤 API REQUEST', 'api', data);
+                });
+
+                client.on('api_response', (data) => {
+                    debugLog('📥 API RESPONSE', 'api', data);
+                });
+                
+                await client.connect();
+                
+            } catch (error) {
+                const errorMessage = getDetailedErrorMessage(error);
+                log(`❌ Failed to connect: ${errorMessage}`);
+                updateStatus('disconnected', 'Failed');
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+
+        async function subscribeChannel() {
+            const channelName = document.getElementById('channelName').value.trim();
+            
+            if (!channelName) {
+                alert('Please enter a channel name');
+                return;
+            }
+            
+            if (!client || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            
+            try {
+                document.getElementById('subscribeBtn').disabled = true;
+                
+                log(`📡 Subscribing to channel: ${channelName}`);
+                
+                currentChannel = client.channel(channelName);
+                
+                await currentChannel.subscribe((message) => {
+                    log(`📨 Received message: ${JSON.stringify(message)}`);
+                    debugLog('📨 CHANNEL EVENT: message received', 'channel', message);
+                    addChatMessage(message.publisher?.userId || 'Unknown', message.message);
+                }, {
+                    enablePresence: true,
+                    retainHistory: true
+                });
+                
+                log(`✅ Subscribed to ${channelName}`);
+                debugLog('✅ CHANNEL EVENT: subscribed', 'channel', { 
+                    channelName, 
+                    options: { enablePresence: true, retainHistory: true } 
+                });
+                
+                currentChannel.on('presence_change', (data) => {
+                    log(`👤 User ${data.user.userId} ${data.action}ed the channel`);
+                    debugLog('👤 CHANNEL EVENT: presence_change', 'channel', data);
+                });
+
+                // Add more channel event listeners for debugging
+                currentChannel.on('subscribed', (data) => {
+                    debugLog('📡 CHANNEL EVENT: subscribed', 'channel', data);
+                });
+
+                currentChannel.on('unsubscribed', (data) => {
+                    debugLog('📡 CHANNEL EVENT: unsubscribed', 'channel', data);
+                });
+
+                currentChannel.on('error', (error) => {
+                    debugLog('❌ CHANNEL EVENT: error', 'error', error);
+                });
+                
+                isSubscribed = true;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('historyBtn').disabled = false;
+                
+            } catch (error) {
+                log(`❌ Failed to subscribe: ${error.message}`);
+                document.getElementById('subscribeBtn').disabled = false;
+            }
+        }
+
+        async function disconnectClient() {
+            if (client) {
+                document.getElementById('disconnectBtn').disabled = true;
+                updateStatus('connecting', 'Disconnecting...');
+                
+                log('🔌 Disconnecting from OddSockets...');
+                client.disconnect();
+            }
+        }
+
+        function addChatMessage(from, message) {
+            const container = document.getElementById('messagesContainer');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message-item';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <span class="message-from">${from}</span>
+                    <span class="message-time">${timestamp}</span>
+                </div>
+                <div class="message-content">${typeof message === 'object' ? JSON.stringify(message) : message}</div>
+            `;
+            
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+            
+            const placeholder = container.querySelector('[style*="text-align: center"]');
+            if (placeholder) {
+                placeholder.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            if (!currentChannel || !isSubscribed) {
+                alert('Please connect and subscribe first');
+                return;
+            }
+            
+            try {
+                const channelName = document.getElementById('channelName').value;
+                log(`📤 Publishing message to ${channelName}: "${message}"`);
+                debugLog('📤 MESSAGE OPERATION: publish', 'message', { 
+                    channel: channelName, 
+                    message: message 
+                });
+                
+                await currentChannel.publish(message);
+                log(`✅ Message published successfully`);
+                debugLog('✅ MESSAGE OPERATION: publish success', 'message', { 
+                    channel: channelName, 
+                    message: message 
+                });
+                
+                messageInput.value = '';
+                
+            } catch (error) {
+                log(`❌ Failed to send message: ${error.message}`);
+                debugLog('❌ MESSAGE OPERATION: publish error', 'error', error);
+            }
+        }
+
+        async function getHistory() {
+            if (!currentChannel || !isSubscribed) {
+                alert('Please connect and subscribe first');
+                return;
+            }
+            
+            try {
+                log('📚 Fetching message history...');
+                debugLog('📚 HISTORY OPERATION: getHistory', 'history', { count: 10 });
+                
+                const history = await currentChannel.getHistory({ count: 10 });
+                log(`📖 Found ${history.length} messages in history`);
+                debugLog('📖 HISTORY OPERATION: getHistory success', 'history', { 
+                    count: history.length, 
+                    messages: history 
+                });
+                
+                history.forEach(msg => {
+                    addChatMessage(msg.publisher?.userId || 'Unknown', msg.message);
+                });
+                
+            } catch (error) {
+                log(`❌ Failed to get history: ${error.message}`);
+                debugLog('❌ HISTORY OPERATION: getHistory error', 'error', error);
+            }
+        }
+
+        function handleMessageKeyPress(event) {
+            if (event.key === 'Enter' && !document.getElementById('sendBtn').disabled) {
+                sendMessage();
+            }
+        }
+
+        function getDetailedErrorMessage(error) {
+            // Provide more informative error messages based on error type and content
+            if (!error) return 'Unknown error occurred';
+            
+            const errorMessage = error.message || error.toString();
+            const errorCode = error.code || error.status;
+            
+            // Network/Connection errors
+            if (errorMessage.includes('ERR_CERT_AUTHORITY_INVALID')) {
+                return 'SSL Certificate Error: The server certificate is invalid. This may be a temporary issue with the production domain.';
+            }
+            
+            if (errorMessage.includes('ERR_NETWORK') || errorMessage.includes('Network Error')) {
+                return 'Network Error: Unable to reach the OddSockets servers. Please check your internet connection.';
+            }
+            
+            if (errorMessage.includes('ERR_CONNECTION_REFUSED') || errorMessage.includes('ECONNREFUSED')) {
+                return 'Connection Refused: The OddSockets server is not accepting connections. The service may be temporarily unavailable.';
+            }
+            
+            if (errorMessage.includes('ERR_NAME_NOT_RESOLVED') || errorMessage.includes('ENOTFOUND')) {
+                return 'DNS Error: Unable to resolve the OddSockets server address. Please check your internet connection.';
+            }
+            
+            if (errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')) {
+                return 'Connection Timeout: The connection to OddSockets servers timed out. Please try again.';
+            }
+            
+            // Authentication errors
+            if (errorCode === 401 || errorMessage.includes('Unauthorized') || errorMessage.includes('Invalid API key')) {
+                return 'Authentication Error: Invalid API key. Please check your API key and try again.';
+            }
+            
+            if (errorCode === 403 || errorMessage.includes('Forbidden')) {
+                return 'Access Denied: Your API key does not have permission to perform this action.';
+            }
+            
+            // API/Server errors
+            if (errorCode === 404 || errorMessage.includes('Not Found')) {
+                return 'Resource Not Found: The requested channel or resource does not exist.';
+            }
+            
+            if (errorCode === 429 || errorMessage.includes('Too Many Requests')) {
+                return 'Rate Limited: Too many requests. Please wait a moment before trying again.';
+            }
+            
+            if (errorCode === 500 || errorMessage.includes('Internal Server Error')) {
+                return 'Server Error: The OddSockets server encountered an internal error. Please try again later.';
+            }
+            
+            if (errorCode === 503 || errorMessage.includes('Service Unavailable')) {
+                return 'Service Unavailable: The OddSockets service is temporarily unavailable. Please try again later.';
+            }
+            
+            // WebSocket errors
+            if (errorMessage.includes('WebSocket')) {
+                return `WebSocket Error: ${errorMessage}. The real-time connection failed.`;
+            }
+            
+            // Channel/Subscription errors
+            if (errorMessage.includes('channel') || errorMessage.includes('subscription')) {
+                return `Channel Error: ${errorMessage}. There was an issue with the channel operation.`;
+            }
+            
+            // Generic error with more context
+            if (errorCode) {
+                return `Error ${errorCode}: ${errorMessage}`;
+            }
+            
+            return `Error: ${errorMessage}`;
+        }
+
+        function clearMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = `
+                <div style="text-align: center; color: var(--color-text-muted); font-style: italic; padding: var(--spacing-lg);">
+                    Messages cleared. Send a new message to start chatting!
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎯 OddSockets JavaScript SDK Live Demo Ready!');
+            log('🔗 Using REAL OddSockets SDK from CDN:');
+            log('   https://prodmedia.tyga.host/public/npm/@oddsocketsai/javascript-sdk@latest/');
+            log('🔑 You need a valid API key from https://oddsockets.com/signup');
+            log('');
+            log('📚 Real features you can test:');
+            log('  • Actual client connection and authentication');
+            log('  • Real channel subscription and management');
+            log('  • Live message publishing and receiving');
+            log('  • Presence tracking and user management');
+            log('  • Message history retrieval');
+            log('  • Error handling and reconnection');
+            log('');
+            log('🚀 Ready to start! Enter your API key and click "Connect".');
+        });
+    </script>
+</body>
+</html>

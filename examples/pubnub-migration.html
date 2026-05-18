@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PubNub Migration Example - OddSockets JavaScript SDK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <style>
+        :root {
+            --color-bg: #fafafa;
+            --color-surface: #ffffff;
+            --color-border: #e5e7eb;
+            --color-text-primary: #111827;
+            --color-text-secondary: #6b7280;
+            --color-text-muted: #9ca3af;
+            --color-accent: #3b82f6;
+            --color-accent-light: #dbeafe;
+            --color-success: #10b981;
+            --color-success-light: #d1fae5;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --border-radius: 8px;
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+            background: var(--color-bg);
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: var(--spacing-xl);
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+        .back-link i {
+            margin-right: var(--spacing-sm);
+        }
+
+        .header {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .header-icon {
+            color: var(--color-accent);
+        }
+
+        .header p {
+            color: var(--color-text-secondary);
+            font-size: 1rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: var(--color-surface);
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-bg);
+            color: var(--color-text-primary);
+        }
+
+        .comparison-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .comparison-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .comparison-item {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+        }
+
+        .comparison-item h4 {
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .before-icon {
+            color: #ef4444;
+        }
+
+        .after-icon {
+            color: var(--color-success);
+        }
+
+        .comparison-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: var(--spacing-md);
+            border-radius: calc(var(--border-radius) / 2);
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .benefits-section {
+            background: var(--color-success-light);
+            border: 1px solid #a7f3d0;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .benefits-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .benefit-icon {
+            color: var(--color-success);
+            margin-top: 2px;
+        }
+
+        .benefit-content h4 {
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: var(--spacing-xs);
+            font-size: 0.875rem;
+        }
+
+        .benefit-content p {
+            color: #047857;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .code-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: var(--color-bg);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-title {
+            font-weight: 600;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .code-lang {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-copy {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: calc(var(--border-radius) / 2);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .code-copy:hover {
+            background: #2563eb;
+        }
+
+        .code-container {
+            position: relative;
+        }
+
+        .code-container pre {
+            margin: 0;
+            padding: var(--spacing-lg);
+            background: #1e293b;
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .code-container code {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-lg) var(--spacing-sm);
+            }
+
+            .header {
+                padding: var(--spacing-lg);
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .code-header {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                align-items: flex-start;
+            }
+        }
+
+        /* Prism Theme Override */
+        pre[class*="language-"] {
+            background: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+
+        .token.comment { color: #64748b !important; }
+        .token.string { color: #22d3ee !important; }
+        .token.keyword { color: #a78bfa !important; }
+        .token.function { color: #fb7185 !important; }
+        .token.number { color: #fbbf24 !important; }
+        .token.operator { color: #e2e8f0 !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to Examples
+        </a>
+        
+        <div class="header">
+            <h1>
+                <i class="fas fa-sync-alt header-icon"></i>
+                PubNub Migration Example
+            </h1>
+            <p>
+                This example demonstrates how to migrate from PubNub to OddSockets with minimal code changes using our PubNub compatibility layer. 
+                Most existing PubNub code will work unchanged!
+            </p>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="copyAllCode()">
+                    <i class="fas fa-copy"></i>
+                    Copy All Code
+                </button>
+                <a href="../swagger/server.js" class="btn btn-secondary">
+                    <i class="fas fa-exchange-alt"></i>
+                    Test Migration
+                </a>
+                <a href="pubnub-migration.js" class="btn btn-secondary" download>
+                    <i class="fas fa-download"></i>
+                    Download .js File
+                </a>
+            </div>
+        </div>
+
+        <div class="comparison-section">
+            <h2 class="comparison-title">
+                <i class="fas fa-balance-scale"></i>
+                Before vs After Comparison
+            </h2>
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <h4>
+                        <i class="fas fa-times-circle before-icon"></i>
+                        Before (PubNub)
+                    </h4>
+                    <div class="comparison-code">const pubnub = new PubNub({
+  publishKey: 'pub-c-xxxxxxxx...',
+  subscribeKey: 'sub-c-xxxxxxxx...',
+  userId: 'user123'
+});</div>
+                </div>
+                <div class="comparison-item">
+                    <h4>
+                        <i class="fas fa-check-circle after-icon"></i>
+                        After (OddSockets)
+                    </h4>
+                    <div class="comparison-code">const pubnub = new PubNubCompat({
+  publishKey: 'ak_live_1234567890abcdef',
+  subscribeKey: 'ak_live_1234567890abcdef',
+  userId: 'user123'
+});</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="benefits-section">
+            <h2 class="benefits-title">
+                <i class="fas fa-rocket"></i>
+                Why Migrate to OddSockets?
+            </h2>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <i class="fas fa-tachometer-alt benefit-icon"></i>
+                    <div class="benefit-content">
+                        <h4>50% Lower Latency</h4>
+                        <p>Significantly faster message delivery than PubNub</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-dollar-sign benefit-icon"></i>
+                    <div class="benefit-content">
+                        <h4>No Per-Message Pricing</h4>
+                        <p>Transparent pricing without message-based charges</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-expand-arrows-alt benefit-icon"></i>
+                    <div class="benefit-content">
+                        <h4>No Message Size Limits</h4>
+                        <p>Send messages of any size without restrictions</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-chart-bar benefit-icon"></i>
+                    <div class="benefit-content">
+                        <h4>Built-in Analytics</h4>
+                        <p>Comprehensive analytics and monitoring included</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-server benefit-icon"></i>
+                    <div class="benefit-content">
+                        <h4>Self-Hosted Option</h4>
+                        <p>Deploy on your own infrastructure for full control</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <i class="fas fa-code benefit-icon"></i>
+                    <div class="benefit-content">
+                        <h4>Same API</h4>
+                        <p>Existing PubNub code works without changes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="code-section">
+            <div class="code-header">
+                <div class="code-title">
+                    <i class="fab fa-js-square"></i>
+                    Complete Migration Example
+                </div>
+                <div class="code-lang">JavaScript</div>
+                <button class="code-copy" onclick="copyCode(this)">
+                    <i class="fas fa-copy"></i>
+                    Copy
+                </button>
+            </div>
+            <div class="code-container">
+                <pre><code class="language-javascript">const { PubNubCompat } = require('../src/index');
+
+/**
+ * PubNub to OddSockets Migration Example
+ * 
+ * This example shows how to migrate from PubNub to OddSockets with minimal code changes.
+ * The PubNubCompat class provides a drop-in replacement for PubNub's JavaScript SDK.
+ */
+
+async function migrationExample() {
+  console.log('🔄 PubNub to OddSockets Migration Example');
+  
+  // BEFORE: PubNub configuration
+  // const pubnub = new PubNub({
+  //   publishKey: 'pub-c-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+  //   subscribeKey: 'sub-c-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+  //   userId: 'user123'
+  // });
+  
+  // AFTER: OddSockets with PubNub compatibility
+  const pubnub = new PubNubCompat({
+    publishKey: 'ak_live_1234567890abcdef', // Your OddSockets API key
+    subscribeKey: 'ak_live_1234567890abcdef', // Same as publishKey for OddSockets
+    userId: 'user123',
+    managerUrl: 'https://manager1.oddsockets.tyga.network' // Optional: OddSockets manager URL
+  });
+  
+  console.log('✅ OddSockets client created with PubNub compatibility');
+  
+  // Add listeners (same as PubNub)
+  pubnub.addListener({
+    status: function(statusEvent) {
+      console.log('📊 Status:', statusEvent.category);
+      if (statusEvent.category === 'PNConnectedCategory') {
+        console.log('🔗 Connected to OddSockets via PubNub compatibility layer');
+      }
+    },
+    
+    message: function(messageEvent) {
+      console.log('📨 Message received:', {
+        channel: messageEvent.channel,
+        message: messageEvent.message,
+        publisher: messageEvent.publisher,
+        timetoken: messageEvent.timetoken
+      });
+    },
+    
+    presence: function(presenceEvent) {
+      console.log('👤 Presence event:', {
+        channel: presenceEvent.channel,
+        action: presenceEvent.action,
+        uuid: presenceEvent.uuid,
+        occupancy: presenceEvent.occupancy
+      });
+    }
+  });
+  
+  // Subscribe to channels (same as PubNub)
+  console.log('📡 Subscribing to channels...');
+  pubnub.subscribe({
+    channels: ['migration-demo', 'chat-room'],
+    withPresence: true
+  });
+  
+  // Wait a moment for connection
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // Publish messages (same as PubNub)
+  console.log('📤 Publishing messages...');
+  
+  // Simple message
+  await pubnub.publish({
+    channel: 'migration-demo',
+    message: 'Hello from OddSockets via PubNub compatibility!'
+  });
+  
+  // Message with metadata
+  await pubnub.publish({
+    channel: 'migration-demo',
+    message: {
+      type: 'migration_test',
+      content: 'This message was sent using PubNub-compatible API',
+      timestamp: Date.now()
+    },
+    meta: {
+      source: 'migration-example',
+      version: '1.0'
+    }
+  });
+  
+  console.log('✅ Messages published');
+  
+  // Get message history (same as PubNub)
+  console.log('📚 Fetching message history...');
+  try {
+    const historyResponse = await pubnub.history({
+      channel: 'migration-demo',
+      count: 10
+    });
+    
+    console.log(`📖 Retrieved ${historyResponse.messages.length} messages from history`);
+    historyResponse.messages.forEach((msg, index) => {
+      console.log(`  ${index + 1}. ${JSON.stringify(msg[0])} (${new Date(msg[1] / 10000).toISOString()})`);
+    });
+  } catch (error) {
+    console.log('📚 History not available yet (channel may be new)');
+  }
+  
+  // Get presence information (same as PubNub)
+  console.log('👥 Fetching presence information...');
+  try {
+    const presenceResponse = await pubnub.hereNow({
+      channels: ['migration-demo', 'chat-room']
+    });
+    
+    console.log(`👤 Total occupancy: ${presenceResponse.totalOccupancy} across ${presenceResponse.totalChannels} channels`);
+    
+    Object.keys(presenceResponse.channels).forEach(channel => {
+      const channelData = presenceResponse.channels[channel];
+      console.log(`  📺 ${channel}: ${channelData.occupancy} users`);
+    });
+  } catch (error) {
+    console.log('👥 Presence information not available yet');
+  }
+  
+  // Set user state (same as PubNub)
+  console.log('🔄 Setting user state...');
+  try {
+    await pubnub.setState({
+      channels: ['migration-demo'],
+      state: {
+        status: 'migrating',
+        from: 'pubnub',
+        to: 'oddsockets',
+        timestamp: Date.now()
+      }
+    });
+    console.log('✅ User state updated');
+  } catch (error) {
+    console.log('🔄 State update not available yet');
+  }
+  
+  // Demonstrate additional OddSockets features
+  console.log('🚀 OddSockets provides additional benefits:');
+  console.log('  • 50% lower latency than PubNub');
+  console.log('  • No message size limits');
+  console.log('  • No per-message pricing');
+  console.log('  • Richer message metadata');
+  console.log('  • Built-in analytics');
+  console.log('  • Self-hosted option');
+  
+  // Migration checklist
+  console.log('\n📋 Migration Checklist:');
+  console.log('  ✅ Replace PubNub import with OddSockets PubNubCompat');
+  console.log('  ✅ Update publishKey/subscribeKey to OddSockets API key');
+  console.log('  ✅ Add managerUrl configuration (optional)');
+  console.log('  ✅ All existing PubNub code works unchanged');
+  console.log('  ✅ Enjoy better performance and lower costs!');
+  
+  // Keep running for a bit
+  console.log('\n⏳ Keeping connection alive for 20 seconds...');
+  setTimeout(() => {
+    console.log('🔌 Disconnecting...');
+    pubnub.disconnect();
+    console.log('✅ Migration example completed successfully!');
+    console.log('🎉 You\'ve successfully migrated from PubNub to OddSockets!');
+    process.exit(0);
+  }, 20000);
+}
+
+// Handle errors
+process.on('unhandledRejection', (error) => {
+  console.error('❌ Unhandled error:', error);
+  process.exit(1);
+});
+
+// Run the migration example
+migrationExample().catch(console.error);</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Copy code functionality
+        function copyCode(button) {
+            const codeContainer = button.closest('.code-section');
+            const codeElement = codeContainer.querySelector('code');
+            
+            if (codeElement) {
+                const code = codeElement.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                    }, 2000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = code;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                    }, 2000);
+                });
+            }
+        }
+
+        // Copy all code functionality
+        function copyAllCode() {
+            const codeElement = document.querySelector('code');
+            if (codeElement) {
+                const code = codeElement.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const button = document.querySelector('.btn-primary');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied All!';
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                    }, 2000);
+                });
+            }
+        }
+
+        // Initialize Prism.js
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+        });
+    </script>
+</body>
+</html>
