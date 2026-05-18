@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OddSockets Enhanced Features Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .log-entry.success {
+            color: #00ff00;
+        }
+        
+        .log-entry.error {
+            color: #ff4444;
+        }
+        
+        .log-entry.info {
+            color: #4da6ff;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        input, select {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 OddSockets Enhanced Features</h1>
+            <p>Complete Slack-like functionality with 67 new events</p>
+            <div>
+                <span id="connectionStatus" class="status disconnected">Disconnected</span>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Connection Section -->
+            <div class="section">
+                <h2>🔌 Connection</h2>
+                <div class="input-group">
+                    <input type="text" id="apiKey" placeholder="Enter your API key" value="your_api_key_here">
+                    <input type="text" id="userId" placeholder="User ID" value="user_123">
+                </div>
+                <div class="button-group">
+                    <button onclick="connect()">Connect</button>
+                    <button onclick="disconnect()">Disconnect</button>
+                </div>
+            </div>
+            
+            <!-- Thread Events -->
+            <div class="section">
+                <h2>📝 Thread Events</h2>
+                <div class="button-group">
+                    <button onclick="testThreadReply()">Thread Reply</button>
+                    <button onclick="testGetThread()">Get Thread</button>
+                    <button onclick="testSubscribeThread()">Subscribe Thread</button>
+                    <button onclick="testFollowThread()">Follow Thread</button>
+                </div>
+            </div>
+            
+            <!-- Reaction Events -->
+            <div class="section">
+                <h2>😀 Reaction Events</h2>
+                <div class="button-group">
+                    <button onclick="testAddReaction()">Add Reaction 👍</button>
+                    <button onclick="testRemoveReaction()">Remove Reaction</button>
+                    <button onclick="testGetReactions()">Get Reactions</button>
+                </div>
+            </div>
+            
+            <!-- Read Receipt Events -->
+            <div class="section">
+                <h2>✓ Read Receipt Events</h2>
+                <div class="button-group">
+                    <button onclick="testMarkRead()">Mark Read</button>
+                    <button onclick="testGetUnreadCounts()">Get Unread Counts</button>
+                    <button onclick="testMarkAllRead()">Mark All Read</button>
+                </div>
+            </div>
+            
+            <!-- Channel Events -->
+            <div class="section">
+                <h2>📢 Channel Events</h2>
+                <div class="button-group">
+                    <button onclick="testCreateChannel()">Create Channel</button>
+                    <button onclick="testJoinChannel()">Join Channel</button>
+                    <button onclick="testGetChannelMembers()">Get Members</button>
+                    <button onclick="testInviteToChannel()">Invite User</button>
+                </div>
+            </div>
+            
+            <!-- Direct Message Events -->
+            <div class="section">
+                <h2>💬 Direct Message Events</h2>
+                <div class="button-group">
+                    <button onclick="testCreateDM()">Create DM</button>
+                    <button onclick="testSendDM()">Send DM</button>
+                    <button onclick="testGetDMConversations()">Get Conversations</button>
+                </div>
+            </div>
+            
+            <!-- Notification Events -->
+            <div class="section">
+                <h2>🔔 Notification Events</h2>
+                <div class="button-group">
+                    <button onclick="testSubscribeNotifications()">Subscribe</button>
+                    <button onclick="testGetNotifications()">Get Notifications</button>
+                    <button onclick="testMarkAllNotificationsRead()">Mark All Read</button>
+                </div>
+            </div>
+            
+            <!-- Presence Events -->
+            <div class="section">
+                <h2>👤 Presence Events</h2>
+                <div class="button-group">
+                    <button onclick="testSetStatus()">Set Online</button>
+                    <button onclick="testSetCustomStatus()">Custom Status</button>
+                    <button onclick="testStartTyping()">Start Typing</button>
+                    <button onclick="testGetUserPresence()">Get Presence</button>
+                </div>
+            </div>
+            
+            <!-- Message Editing Events -->
+            <div class="section">
+                <h2>✏️ Message Editing Events</h2>
+                <div class="button-group">
+                    <button onclick="testEditMessage()">Edit Message</button>
+                    <button onclick="testPinMessage()">Pin Message</button>
+                    <button onclick="testGetPinnedMessages()">Get Pinned</button>
+                </div>
+            </div>
+            
+            <!-- Search Events -->
+            <div class="section">
+                <h2>🔍 Search Events</h2>
+                <div class="button-group">
+                    <button onclick="testSearchMessages()">Search Messages</button>
+                    <button onclick="testSearchInChannel()">Search in Channel</button>
+                    <button onclick="testFilterMessages()">Filter Messages</button>
+                </div>
+            </div>
+            
+            <!-- Event Log -->
+            <div class="section">
+                <h2>📋 Event Log</h2>
+                <button onclick="clearLog()">Clear Log</button>
+                <div id="log" class="log"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Include OddSockets SDK -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="../dist/oddsockets.min.js"></script>
+    
+    <script>
+        let client = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        function updateStatus(status) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        
+        function connect() {
+            const apiKey = document.getElementById('apiKey').value;
+            const userId = document.getElementById('userId').value;
+            
+            if (!apiKey) {
+                log('Please enter an API key', 'error');
+                return;
+            }
+            
+            log('Connecting to OddSockets...', 'info');
+            updateStatus('connecting');
+            
+            client = new OddSockets({
+                apiKey: apiKey,
+                userId: userId
+            });
+            
+            client.on('connected', () => {
+                log('✅ Connected successfully!', 'success');
+                updateStatus('connected');
+            });
+            
+            client.on('disconnected', () => {
+                log('Disconnected', 'error');
+                updateStatus('disconnected');
+            });
+            
+            client.on('error', (error) => {
+                log(`Error: ${error.message}`, 'error');
+            });
+            
+            // Listen for enhanced events
+            setupEnhancedEventListeners();
+        }
+        
+        function disconnect() {
+            if (client) {
+                client.disconnect();
+                client = null;
+                log('Disconnected', 'info');
+                updateStatus('disconnected');
+            }
+        }
+        
+        function setupEnhancedEventListeners() {
+            const socket = client._getSocket();
+            
+            socket.on('new_thread_reply', (data) => {
+                log(`📝 New thread reply: ${JSON.stringify(data)}`, 'success');
+            });
+            
+            socket.on('reaction_added', (data) => {
+                log(`😀 Reaction added: ${data.emoji}`, 'success');
+            });
+            
+            socket.on('message_read', (data) => {
+                log(`✓ Message read by ${data.userId}`, 'success');
+            });
+            
+            socket.on('channel_created', (data) => {
+                log(`📢 Channel created: ${data.channel.name}`, 'success');
+            });
+            
+            socket.on('user_typing', (data) => {
+                log(`👤 ${data.userId} is typing...`, 'info');
+            });
+            
+            socket.on('notification', (data) => {
+                log(`🔔 New notification: ${data.type}`, 'success');
+            });
+        }
+        
+        // Thread Events
+        async function testThreadReply() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const result = await client.enhanced.threadReply({
+                    channel: 'general',
+                    parentMessageId: 'msg_123',
+                    message: 'This is a test reply!',
+                    userId: document.getElementById('userId').value,
+                    userName: 'Test User'
+                });
+                log(`Thread reply created: ${JSON.stringify(result)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGetThread() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const thread = await client.enhanced.getThread('thread_123');
+                log(`Thread data: ${JSON.stringify(thread)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSubscribeThread() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                await client.enhanced.subscribeThread('thread_123', document.getElementById('userId').value);
+                log('Subscribed to thread', 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testFollowThread() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.followThread('thread_123', document.getElementById('userId').value);
+            log('Following thread', 'success');
+        }
+        
+        // Reaction Events
+        function testAddReaction() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.addReaction({
+                messageId: 'msg_123',
+                channel: 'general',
+                emoji: '👍',
+                userId: document.getElementById('userId').value,
+                userName: 'Test User'
+            });
+            log('Added reaction 👍', 'success');
+        }
+        
+        function testRemoveReaction() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.removeReaction({
+                messageId: 'msg_123',
+                channel: 'general',
+                emoji: '👍',
+                userId: document.getElementById('userId').value
+            });
+            log('Removed reaction', 'success');
+        }
+        
+        async function testGetReactions() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const reactions = await client.enhanced.getReactions('msg_123');
+                log(`Reactions: ${JSON.stringify(reactions)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Read Receipt Events
+        function testMarkRead() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.markRead({
+                messageId: 'msg_123',
+                channel: 'general',
+                userId: document.getElementById('userId').value,
+                userName: 'Test User'
+            });
+            log('Marked message as read', 'success');
+        }
+        
+        async function testGetUnreadCounts() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const counts = await client.enhanced.getUnreadCounts(
+                    document.getElementById('userId').value,
+                    ['general', 'random']
+                );
+                log(`Unread counts: ${JSON.stringify(counts)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testMarkAllRead() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.markAllRead('general', document.getElementById('userId').value);
+            log('Marked all messages as read', 'success');
+        }
+        
+        // Channel Events
+        async function testCreateChannel() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const channel = await client.enhanced.createChannel({
+                    name: 'test-channel-' + Date.now(),
+                    type: 'public',
+                    description: 'Test channel',
+                    topic: 'Testing',
+                    createdBy: document.getElementById('userId').value,
+                    createdByName: 'Test User'
+                });
+                log(`Channel created: ${JSON.stringify(channel)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testJoinChannel() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.joinChannel({
+                channelId: 'channel_123',
+                userId: document.getElementById('userId').value,
+                userName: 'Test User'
+            });
+            log('Joined channel', 'success');
+        }
+        
+        async function testGetChannelMembers() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const members = await client.enhanced.getChannelMembers('channel_123');
+                log(`Channel members: ${JSON.stringify(members)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testInviteToChannel() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.inviteToChannel({
+                channelId: 'channel_123',
+                invitedUserId: 'user_456',
+                invitedUserName: 'Jane Doe',
+                invitedBy: document.getElementById('userId').value
+            });
+            log('Invited user to channel', 'success');
+        }
+        
+        // Direct Message Events
+        async function testCreateDM() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const dm = await client.enhanced.createDM({
+                    userIds: [document.getElementById('userId').value, 'user_456'],
+                    type: '1-on-1'
+                });
+                log(`DM created: ${JSON.stringify(dm)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testSendDM() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.sendDM({
+                conversationId: 'dm_123',
+                message: 'Hello from the demo!',
+                userId: document.getElementById('userId').value,
+                userName: 'Test User'
+            });
+            log('Sent DM', 'success');
+        }
+        
+        async function testGetDMConversations() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const conversations = await client.enhanced.getDMConversations(
+                    document.getElementById('userId').value
+                );
+                log(`DM conversations: ${JSON.stringify(conversations)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Notification Events
+        function testSubscribeNotifications() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.subscribeNotifications(document.getElementById('userId').value);
+            log('Subscribed to notifications', 'success');
+        }
+        
+        async function testGetNotifications() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const notifications = await client.enhanced.getNotifications({
+                    userId: document.getElementById('userId').value,
+                    limit: 10
+                });
+                log(`Notifications: ${JSON.stringify(notifications)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testMarkAllNotificationsRead() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.markAllNotificationsRead(document.getElementById('userId').value);
+            log('Marked all notifications as read', 'success');
+        }
+        
+        // Presence Events
+        function testSetStatus() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.setStatus(document.getElementById('userId').value, 'online');
+            log('Set status to online', 'success');
+        }
+        
+        function testSetCustomStatus() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.setCustomStatus({
+                userId: document.getElementById('userId').value,
+                emoji: '🏖️',
+                text: 'On vacation'
+            });
+            log('Set custom status', 'success');
+        }
+        
+        function testStartTyping() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.startTyping(document.getElementById('userId').value, 'general');
+            log('Started typing indicator', 'success');
+            setTimeout(() => {
+                client.enhanced.stopTyping(document.getElementById('userId').value, 'general');
+                log('Stopped typing indicator', 'success');
+            }, 3000);
+        }
+        
+        async function testGetUserPresence() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const presence = await client.enhanced.getUserPresence(['user_123', 'user_456']);
+                log(`User presence: ${JSON.stringify(presence)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Message Editing Events
+        function testEditMessage() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.editMessage({
+                messageId: 'msg_123',
+                channel: 'general',
+                newContent: 'Updated message content',
+                userId: document.getElementById('userId').value
+            });
+            log('Edited message', 'success');
+        }
+        
+        function testPinMessage() {
+            if (!client) return log('Not connected', 'error');
+            client.enhanced.pinMessage({
+                messageId: 'msg_123',
+                channel: 'general',
+                userId: document.getElementById('userId').value
+            });
+            log('Pinned message', 'success');
+        }
+        
+        async function testGetPinnedMessages() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const pinned = await client.enhanced.getPinnedMessages('general');
+                log(`Pinned messages: ${JSON.stringify(pinned)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Search Events
+        async function testSearchMessages() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const results = await client.enhanced.searchMessages({
+                    query: 'test',
+                    limit: 10,
+                    userId: document.getElementById('userId').value
+                });
+                log(`Search results: ${JSON.stringify(results)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSearchInChannel() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const results = await client.enhanced.searchInChannel({
+                    channel: 'general',
+                    query: 'test',
+                    limit: 10
+                });
+                log(`Channel search results: ${JSON.stringify(results)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFilterMessages() {
+            if (!client) return log('Not connected', 'error');
+            try {
+                const results = await client.enhanced.filterMessages({
+                    channel: 'general',
+                    userId: document.getElementById('userId').value,
+                    limit: 10
+                });
+                log(`Filter results: ${JSON.stringify(results)}`, 'success');
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initial log message
+        log('🚀 OddSockets Enhanced Features Demo Ready!', 'info');
+        log('Enter your API key and click Connect to get started', 'info');
+    </script>
+</body>
+</html>
