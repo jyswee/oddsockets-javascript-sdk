@@ -142,7 +142,7 @@ app.post('/sdk/client/create', (req, res) => {
     } : null,
     config: {
       apiKey: apiKey.substring(0, 12) + '...',
-      managerUrl: managerUrl || 'https://manager1.oddsockets.tyga.network',
+      managerUrl: managerUrl || 'https://connect.oddsockets.tyga.network',
       userId: userId || 'auto-generated',
       autoConnect: autoConnect !== false
     }
@@ -323,7 +323,7 @@ app.post('/sdk/pubnub/create', (req, res) => {
       publishKey: publishKey?.substring(0, 12) + '...',
       subscribeKey: subscribeKey?.substring(0, 12) + '...',
       userId: userId,
-      managerUrl: managerUrl || 'https://manager1.oddsockets.tyga.network'
+      managerUrl: managerUrl || 'https://connect.oddsockets.tyga.network'
     }
   });
 });
