@@ -33,7 +33,7 @@
  *               summary: Advanced configuration
  *               value:
  *                 apiKey: "ak_live_1234567890abcdef"
- *                 managerUrl: "https://manager1.oddsockets.tyga.network"
+ *                 managerUrl: "https://connect.oddsockets.tyga.network"
  *                 userId: "user123"
  *                 autoConnect: true
  *                 options:
@@ -606,7 +606,7 @@
  *                 publishKey: "ak_live_1234567890abcdef"
  *                 subscribeKey: "ak_live_1234567890abcdef"
  *                 userId: "user123"
- *                 managerUrl: "https://manager1.oddsockets.tyga.network"
+ *                 managerUrl: "https://connect.oddsockets.tyga.network"
  *     responses:
  *       200:
  *         description: PubNub-compatible client created successfully

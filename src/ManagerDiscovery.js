@@ -6,7 +6,7 @@
  */
 class ManagerDiscovery {
   constructor() {
-    this.managerUrl = 'https://manager1.oddsockets.tyga.network';
+    this.managerUrl = 'https://connect.oddsockets.tyga.network';
   }
 
   /**

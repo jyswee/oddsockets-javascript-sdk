@@ -1,5 +1,36 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const WebpackObfuscator = require('webpack-obfuscator');
+
+// Hardened obfuscation — ported from bgz-cli (scripts/build.js), target: browser.
+// Applied to OUR src only (exclude node_modules) so socket.io internals are not
+// control-flow-flattened (which breaks them). RC4-encodes strings incl. the endpoint.
+const OBFUSCATOR_OPTIONS = {
+  compact: true,
+  // Browser-tuned: control-flow-flattening + dead-code-injection disabled to keep
+  // the bundle light and avoid transforming vendored socket.io. String hiding
+  // (the endpoint) comes from the RC4 string-array below, which is retained.
+  controlFlowFlattening: false,
+  deadCodeInjection: false,
+  stringArray: true,
+  stringArrayEncoding: ['rc4'],
+  stringArrayThreshold: 1,
+  stringArrayRotate: true,
+  stringArrayShuffle: true,
+  stringArrayWrappersCount: 2,
+  stringArrayWrappersType: 'function',
+  renameGlobals: true,
+  renameProperties: false,
+  selfDefending: false,
+  identifierNamesGenerator: 'hexadecimal',
+  numbersToExpressions: true,
+  simplify: true,
+  splitStrings: true,
+  splitStringsChunkLength: 5,
+  transformObjectKeys: true,
+  unicodeEscapeSequence: true,
+  target: 'browser'
+};
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -44,6 +75,11 @@ module.exports = (env, argv) => {
         }
       ]
     },
+    plugins: isProduction ? [
+      // Obfuscate the final emitted bundle (bgz-cli flag set). Runs after webpack
+      // has resolved all imports to numeric ids, so module wiring stays intact.
+      new WebpackObfuscator(OBFUSCATOR_OPTIONS)
+    ] : [],
     optimization: {
       minimize: isProduction,
       minimizer: [
@@ -92,7 +128,7 @@ module.exports = (env, argv) => {
       // 'socket.io-client': 'io',
       // 'eventemitter3': 'EventEmitter'
     },
-    devtool: isProduction ? 'source-map' : 'eval-source-map',
+    devtool: isProduction ? false : 'eval-source-map',
     target: 'web',
     mode: argv.mode || 'development'
   };

@@ -111,8 +111,8 @@ Use the "Try it out" buttons below to test SDK methods with real examples.`,
           managerUrl: {
             type: 'string',
             description: 'Manager URL (optional)',
-            example: 'https://manager1.oddsockets.tyga.network',
-            default: 'https://manager1.oddsockets.tyga.network'
+            example: 'https://connect.oddsockets.tyga.network',
+            default: 'https://connect.oddsockets.tyga.network'
           },
           userId: {
             type: 'string',
@@ -169,7 +169,7 @@ Use the "Try it out" buttons below to test SDK methods with real examples.`,
           managerUrl: {
             type: 'string',
             description: 'OddSockets manager URL',
-            example: 'https://manager1.oddsockets.tyga.network'
+            example: 'https://connect.oddsockets.tyga.network'
           }
         }
       },
