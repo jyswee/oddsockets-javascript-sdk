@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OddSockets Round-Trip Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 720px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+            color: #111827;
+        }
+        h1 { font-size: 1.5rem; }
+        .row { margin-bottom: 1rem; }
+        input {
+            width: 100%;
+            padding: 0.6rem;
+            font-size: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            background: #3b82f6;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        #status {
+            margin-top: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .ok { color: #059669; }
+        .fail { color: #dc2626; }
+        .pending { color: #6b7280; }
+        #log {
+            margin-top: 1rem;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 6rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>OddSockets Round-Trip Demo</h1>
+    <p>
+        This page performs a full pub/sub round-trip against the OddSockets platform:
+        connect &rarr; subscribe to a unique channel &rarr; publish a message &rarr; receive
+        your own message back. It targets the manager endpoint
+        <code>https://connect.oddsockets.tyga.network</code>.
+    </p>
+
+    <div class="row">
+        <label for="apiKey">API key</label>
+        <input id="apiKey" type="text" placeholder="ak_live_..." autocomplete="off" />
+        <p class="pending" style="font-size:0.85rem;">
+            Your key is only used in this page and never stored. You can also set
+            <code>window.ODDSOCKETS_API_KEY</code> before this script runs and it will be
+            picked up automatically.
+        </p>
+    </div>
+
+    <div class="row">
+        <button id="run">Run round-trip</button>
+    </div>
+
+    <div id="status" class="pending">Idle.</div>
+    <div id="log"></div>
+
+    <!-- Load the local SDK bundle (UMD global: OddSockets) -->
+    <script src="../dist/oddsockets.min.js"></script>
+    <script>
+        var TIMEOUT_MS = 15000;
+        var MANAGER_URL = 'https://connect.oddsockets.tyga.network';
+
+        var statusEl = document.getElementById('status');
+        var logEl = document.getElementById('log');
+        var runBtn = document.getElementById('run');
+        var apiKeyInput = document.getElementById('apiKey');
+
+        // Allow a documented window var to pre-fill the key (never hardcoded).
+        if (window.ODDSOCKETS_API_KEY) {
+            apiKeyInput.value = window.ODDSOCKETS_API_KEY;
+        }
+
+        function log(line) {
+            logEl.textContent += line + '\n';
+        }
+
+        function setStatus(text, cls) {
+            statusEl.textContent = text;
+            statusEl.className = cls;
+        }
+
+        async function runRoundTrip() {
+            logEl.textContent = '';
+            var apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                setStatus('FAILED - please enter an API key', 'fail');
+                return;
+            }
+
+            runBtn.disabled = true;
+            setStatus('Running...', 'pending');
+
+            var channelName = 'demo-' + Math.random().toString(36).slice(2, 10);
+            var nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
+            var settled = false;
+            var timer = null;
+            var client = null;
+
+            function finish(ok, message) {
+                if (settled) return;
+                settled = true;
+                if (timer) clearTimeout(timer);
+                setStatus(message, ok ? 'ok' : 'fail');
+                try { if (client) client.disconnect(); } catch (e) {}
+                runBtn.disabled = false;
+            }
+
+            timer = setTimeout(function () {
+                finish(false, 'FAILED - timed out after 15s waiting for round-trip');
+            }, TIMEOUT_MS);
+
+            try {
+                client = new window.OddSockets({
+                    apiKey: apiKey,
+                    managerUrl: MANAGER_URL
+                });
+
+                client.on('connecting', function () { log('Connecting to OddSockets...'); });
+                client.on('connected', function () { log('Connected.'); });
+                client.on('worker_assigned', function (data) {
+                    log('Worker assigned: ' + data.workerId);
+                });
+                client.on('error', function (error) {
+                    log('Error: ' + (error && error.message ? error.message : error));
+                });
+
+                // Wait for connection.
+                await new Promise(function (resolve) {
+                    if (client.getState() === 'connected') {
+                        resolve();
+                    } else {
+                        client.once('connected', resolve);
+                    }
+                });
+
+                var channel = client.channel(channelName);
+
+                log('Subscribing to channel "' + channelName + '"...');
+                await channel.subscribe(function (message) {
+                    var payload = message && message.message;
+                    if (payload && payload.nonce === nonce) {
+                        log('Received own message back (nonce matched).');
+                        finish(true, 'OK - round-trip verified');
+                    } else {
+                        log('Received a message (nonce did not match, ignoring).');
+                    }
+                });
+                log('Subscribed.');
+
+                log('Publishing message with nonce ' + nonce + '...');
+                await channel.publish({ text: 'hello from the OddSockets demo', nonce: nonce });
+                log('Published. Waiting for echo...');
+            } catch (error) {
+                finish(false, 'FAILED - ' + (error && error.message ? error.message : error));
+            }
+        }
+
+        runBtn.addEventListener('click', runRoundTrip);
+    </script>
+</body>
+</html>
