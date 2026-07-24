@@ -294,10 +294,56 @@ await channel.publish<MyMessage>({
 </html>
 ```
 
+## Enhanced Features
+
+Enhanced (Slack-like) events layer on top of the core pub/sub. The **send** side lives
+on `client.enhanced.*`; fire-and-forget actions return `undefined`, while query/request
+methods return a `Promise` that resolves with the worker's response. The matching
+**broadcast** is forwarded to the client's own event surface, so any subscriber can
+react with `client.on('<event>', handler)`.
+
+```javascript
+import OddSockets from '@oddsocketsai/javascript-sdk';
+
+const client = new OddSockets({ apiKey: 'your-api-key', userId: 'alice' });
+await client.connect();
+await client.channel('room-42').subscribe(() => {}); // join the scoped room
+
+// Receive-path: enhanced broadcasts arrive on the client event surface
+client.on('user_typing',    (data) => console.log('typing:', data));
+client.on('reaction_added', (data) => console.log('reaction:', data));
+
+// Send-path: fire-and-forget actions
+client.enhanced.startTyping('alice', 'room-42');
+client.enhanced.addReaction({
+  messageId: 'msg-1', channel: 'room-42', emoji: ':thumbsup:',
+  userId: 'alice', userName: 'Alice'
+});
+
+// Request/response methods resolve with the worker's data
+const reactions = await client.enhanced.getReactions('msg-1');
+const results   = await client.enhanced.searchMessages({ query: 'launch', userId: 'alice', limit: 20 });
+```
+
+### Event surface
+
+| Area | Send (`client.enhanced.*`) | Broadcast (`client.on(...)`) |
+|---|---|---|
+| **Typing** | `startTyping(userId, channel)` · `stopTyping(userId, channel)` | `user_typing` · `user_stopped_typing` |
+| **Reactions** | `addReaction({messageId, channel, emoji, userId, userName})` · `removeReaction({messageId, channel, emoji, userId})` · `await getReactions(messageId)` | `reaction_added` · `reaction_removed` |
+| **Threads** | `await threadReply({channel, parentMessageId, message, userId, userName})` · `await getThread(threadId)` · `await subscribeThread(threadId, userId)` · `markThreadRead(threadId, userId)` · `followThread(threadId, userId)` · `unfollowThread(threadId, userId)` | `thread_reply` · `thread_subscribed` · `thread_followed` · `thread_unfollowed` · `thread_read_updated` |
+| **Read receipts** | `markRead({messageId, channel, userId, userName})` · `await getUnreadCounts(userId, channels)` · `markAllRead(channel, userId)` | `user_read` · `unread_count_updated` · `all_marked_read` |
+| **Messages** | `editMessage({messageId, channel, newContent, userId})` · `deleteMessage({messageId, channel, userId})` · `pinMessage({messageId, channel, userId})` · `unpinMessage({messageId, channel, userId})` · `await getPinnedMessages(channel)` | `message_edited` · `message_deleted` · `message_pinned` · `message_unpinned` |
+| **Presence & status** | `setStatus(userId, status)` · `setCustomStatus({userId, emoji, text, expiresAt})` · `clearCustomStatus(userId)` · `setDND(userId, until)` · `clearDND(userId)` · `await getUserPresence(userIds)` | `user_status_changed` · `custom_status_updated` · `custom_status_cleared` · `dnd_status_changed` · `status_updated` |
+| **Channels** | `await createChannel({name, type, description, topic, createdBy, createdByName})` · `updateChannel({channelId, updates, userId})` · `archiveChannel(channelId, userId)` · `inviteToChannel({channelId, invitedUserId, invitedUserName, invitedBy})` · `removeFromChannel({channelId, removedUserId, removedBy})` · `joinChannel({channelId, userId, userName})` · `leaveChannel(channelId, userId)` · `await getChannelMembers(channelId)` | `channel_created` · `channel_updated` · `user_invited` · `user_joined_channel` · `user_left_channel` · `user_removed` |
+| **Direct messages** | `await createDM({userIds, type})` · `sendDM({conversationId, message, userId, userName})` · `await getDMConversations(userId, includeArchived)` | `dm_created` · `dm_received` |
+| **Notifications** | `subscribeNotifications(userId)` · `markNotificationRead(notificationId, userId)` · `markAllNotificationsRead(userId)` · `clearNotifications(userId)` · `await getNotifications({userId, limit, status})` | `notification` · `notification_read` · `all_notifications_read` · `notifications_cleared` |
+| **Search** | `await searchMessages({query, userId, limit})` · `await filterMessages({...})` · `await searchInChannel({channel, query, limit})` · `await searchByUser({userId, query, limit})` | resolves with the matching result set |
+
 ## Advanced Features
 
 ### Message Size Limits
-- **Maximum message size**: 32KB (industry standard, matches PubNub)
+- **Maximum message size**: 32KB (industry standard)
 - **Automatic validation**: SDK validates message size before sending
 - **UTF-8 encoding**: Proper byte counting for international characters
 

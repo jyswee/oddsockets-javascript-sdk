@@ -691,6 +691,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="#enhanced" class="nav-link">
+                            <i class="fas fa-bolt nav-icon"></i>
+                            Enhanced Features
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="#performance" class="nav-link">
                             <i class="fas fa-chart-line nav-icon"></i>
                             Performance
@@ -983,6 +989,53 @@ channel.publish(message, {
                         <p>Browse all available examples including Node.js code, browser demos, and interactive tutorials</p>
                     </a>
                 </div>
+            </section>
+
+            <section id="enhanced" class="section">
+                <h2 class="section-title">
+                    <i class="fas fa-bolt"></i>
+                    Enhanced Features
+                </h2>
+
+                <p>Enhanced (Slack-like) events layer on top of the core pub/sub. The <strong>send</strong> side lives on <code>client.enhanced.*</code>; fire-and-forget actions return <code>undefined</code>, while query/request methods return a <code>Promise</code> that resolves with the worker's response. The matching <strong>broadcast</strong> is forwarded to the client's own event surface, so any subscriber can react with <code>client.on('&lt;event&gt;', handler)</code>.</p>
+
+                <h3>Typing, reactions &amp; queries</h3>
+                <pre><code class="language-javascript">import OddSockets from '@oddsocketsai/javascript-sdk';
+
+const client = new OddSockets({ apiKey: 'your-api-key', userId: 'alice' });
+await client.connect();
+await client.channel('room-42').subscribe(() =&gt; {}); // join the scoped room
+
+// Receive-path: enhanced broadcasts arrive on the client event surface
+client.on('user_typing',    (data) =&gt; console.log('typing:', data));
+client.on('reaction_added', (data) =&gt; console.log('reaction:', data));
+
+// Send-path: fire-and-forget actions
+client.enhanced.startTyping('alice', 'room-42');
+client.enhanced.addReaction({
+  messageId: 'msg-1', channel: 'room-42', emoji: ':thumbsup:',
+  userId: 'alice', userName: 'Alice'
+});
+
+// Request/response methods resolve with the worker's data
+const reactions = await client.enhanced.getReactions('msg-1');
+const results   = await client.enhanced.searchMessages({ query: 'launch', userId: 'alice', limit: 20 });</code></pre>
+
+                <h3>Event surface</h3>
+                <ul>
+                    <li><strong>Typing</strong> &mdash; <code>startTyping(userId, channel)</code>, <code>stopTyping(userId, channel)</code> &rarr; <code>user_typing</code>, <code>user_stopped_typing</code></li>
+                    <li><strong>Reactions</strong> &mdash; <code>addReaction({messageId, channel, emoji, userId, userName})</code>, <code>removeReaction({...})</code>, <code>await getReactions(messageId)</code> &rarr; <code>reaction_added</code>, <code>reaction_removed</code></li>
+                    <li><strong>Threads</strong> &mdash; <code>await threadReply({channel, parentMessageId, message, userId, userName})</code>, <code>await getThread(threadId)</code>, <code>await subscribeThread(threadId, userId)</code>, <code>markThreadRead</code>, <code>followThread</code>, <code>unfollowThread</code> &rarr; <code>thread_reply</code>, <code>thread_subscribed</code>, <code>thread_followed</code>, <code>thread_unfollowed</code>, <code>thread_read_updated</code></li>
+                    <li><strong>Read receipts</strong> &mdash; <code>markRead({messageId, channel, userId, userName})</code>, <code>await getUnreadCounts(userId, channels)</code>, <code>markAllRead(channel, userId)</code> &rarr; <code>user_read</code>, <code>unread_count_updated</code>, <code>all_marked_read</code></li>
+                    <li><strong>Messages</strong> &mdash; <code>editMessage({messageId, channel, newContent, userId})</code>, <code>deleteMessage({...})</code>, <code>pinMessage({...})</code>, <code>unpinMessage({...})</code>, <code>await getPinnedMessages(channel)</code> &rarr; <code>message_edited</code>, <code>message_deleted</code>, <code>message_pinned</code>, <code>message_unpinned</code></li>
+                    <li><strong>Presence &amp; status</strong> &mdash; <code>setStatus(userId, status)</code>, <code>setCustomStatus({userId, emoji, text, expiresAt})</code>, <code>clearCustomStatus(userId)</code>, <code>setDND(userId, until)</code>, <code>clearDND(userId)</code>, <code>await getUserPresence(userIds)</code> &rarr; <code>user_status_changed</code>, <code>custom_status_updated</code>, <code>custom_status_cleared</code>, <code>dnd_status_changed</code>, <code>status_updated</code></li>
+                    <li><strong>Channels</strong> &mdash; <code>await createChannel({name, type, description, topic, createdBy, createdByName})</code>, <code>updateChannel({channelId, updates, userId})</code>, <code>archiveChannel(channelId, userId)</code>, <code>inviteToChannel({...})</code>, <code>removeFromChannel({...})</code>, <code>joinChannel({...})</code>, <code>leaveChannel(channelId, userId)</code>, <code>await getChannelMembers(channelId)</code> &rarr; <code>channel_created</code>, <code>channel_updated</code>, <code>user_invited</code>, <code>user_joined_channel</code>, <code>user_left_channel</code>, <code>user_removed</code></li>
+                    <li><strong>Direct messages</strong> &mdash; <code>await createDM({userIds, type})</code>, <code>sendDM({conversationId, message, userId, userName})</code>, <code>await getDMConversations(userId, includeArchived)</code> &rarr; <code>dm_created</code>, <code>dm_received</code></li>
+                    <li><strong>Notifications</strong> &mdash; <code>subscribeNotifications(userId)</code>, <code>markNotificationRead(notificationId, userId)</code>, <code>markAllNotificationsRead(userId)</code>, <code>clearNotifications(userId)</code>, <code>await getNotifications({userId, limit, status})</code> &rarr; <code>notification</code>, <code>notification_read</code>, <code>all_notifications_read</code>, <code>notifications_cleared</code></li>
+                    <li><strong>Search</strong> &mdash; <code>await searchMessages({query, userId, limit})</code>, <code>await filterMessages({...})</code>, <code>await searchInChannel({channel, query, limit})</code>, <code>await searchByUser({userId, query, limit})</code> &rarr; resolves with the matching result set</li>
+                </ul>
+
+                <p>Enhanced broadcasts are forwarded to the client event surface, so you subscribe to any of them with <code>client.on('&lt;event&gt;', handler)</code> &mdash; the same emitter used for connection events.</p>
             </section>
 
             <section id="performance" class="section">
