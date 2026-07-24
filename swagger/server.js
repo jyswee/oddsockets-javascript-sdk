@@ -113,8 +113,8 @@ app.get('/api/sdk/info', (req, res) => {
       'Built-in analytics',
       'Self-hosted option'
     ],
-    installation: 'npm install @oddsockets/javascript-sdk',
-    repository: 'https://github.com/oddsockets/javascript-sdk',
+    installation: 'npm install @oddsocketsai/javascript-sdk',
+    repository: 'https://github.com/jyswee/oddsockets-javascript-sdk',
     documentation: 'https://docs.oddsockets.com/sdks/javascript'
   });
 });
