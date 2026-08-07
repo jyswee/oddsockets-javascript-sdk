@@ -48,7 +48,10 @@ class OddSockets extends EventEmitter {
     
     // Auto-connect by default
     if (config.autoConnect !== false) {
-      this.connect();
+      // Fire-and-forget: failures are reported via the 'error' event and
+      // retried by _scheduleReconnect. Swallow here so autoConnect never
+      // produces an unhandled rejection.
+      this.connect().catch(() => {});
     }
   }
   
@@ -110,6 +113,11 @@ class OddSockets extends EventEmitter {
       } else {
         this.emit('max_reconnect_attempts_reached');
       }
+
+      // Surface the failure to the caller. Background reconnection still runs,
+      // but `await connect()` must not resolve when nothing connected — that
+      // left callers with no way to detect failure (BUG-2026-0807-0035).
+      throw error;
     }
   }
   
@@ -404,7 +412,7 @@ class OddSockets extends EventEmitter {
     
     setTimeout(() => {
       if (this.connectionState === 'reconnecting') {
-        this.connect();
+        this.connect().catch(() => {});
       }
     }, delay);
   }
