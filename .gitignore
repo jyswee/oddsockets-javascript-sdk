@@ -16,3 +16,12 @@ rollback_all.sh
 setup-github.sh
 verify-setup.sh
 config-loader.js
+
+# Agent working notes — must never reach the public repo.
+CLAUDE.md
+AGENTS.md
+
+# Local scratch harnesses.
+test-live.js
+test-limits.js
+package-lock.json
