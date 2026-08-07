@@ -57,10 +57,34 @@ class OddSockets extends EventEmitter {
    * Handles the Manager → Worker assignment internally
    */
   async connect() {
-    if (this.connectionState === 'connecting' || this.connectionState === 'connected') {
+    if (this.connectionState === 'connected') {
       return;
     }
-    
+
+    // A connect is already in flight — usually the constructor's autoConnect,
+    // which fires before the caller gets a chance to `await client.connect()`.
+    // Await THAT attempt instead of returning immediately: returning early made
+    // the awaited promise resolve while the socket was still connecting, so the
+    // documented `await connect(); channel.subscribe()` pattern threw
+    // 'Client is not connected' (BUG-2026-0728-0012).
+    if (this._connectPromise) {
+      return this._connectPromise;
+    }
+
+    this._connectPromise = this._establishConnection();
+    try {
+      return await this._connectPromise;
+    } finally {
+      this._connectPromise = null;
+    }
+  }
+
+  /**
+   * Perform the actual Manager assignment + worker connection.
+   * Always use connect() — it de-duplicates concurrent attempts.
+   * @private
+   */
+  async _establishConnection() {
     this.connectionState = 'connecting';
     this.emit('connecting');
     
