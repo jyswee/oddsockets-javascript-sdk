@@ -29,6 +29,7 @@ class OddSockets extends EventEmitter {
     this.config = {
       apiKey: config.apiKey,
       userId: config.userId,
+      managerUrl: config.managerUrl,
       options: config.options || {}
     };
     
@@ -228,8 +229,12 @@ class OddSockets extends EventEmitter {
    */
   async _getWorkerAssignment() {
     try {
-      // Discover the optimal manager URL automatically
-      const managerUrl = await managerDiscovery.discoverManagerUrl(this.config.apiKey);
+      // Honour the configured manager verbatim. If it is unreachable the
+      // connection fails — we never silently retarget the default manager.
+      const managerUrl = await managerDiscovery.discoverManagerUrl(
+        this.config.apiKey,
+        this.config.managerUrl
+      );
       
       const response = await axios.get(`${managerUrl}/api/cluster/select-worker`, {
         params: {

@@ -37,6 +37,7 @@ class PubNubCompat {
     this.client = new OddSockets({
       apiKey: config.publishKey, // Use publishKey as the OddSockets API key
       userId: config.userId,
+      managerUrl: config.managerUrl,
       options: config.options,
       autoConnect: false // We'll handle connection manually for PubNub compatibility
     });
