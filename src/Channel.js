@@ -482,8 +482,19 @@ class Channel extends EventEmitter {
     } else if (data.action === 'leave') {
       this.presence.delete(data.user.userId);
     }
-    
+
     this.emit('presence_change', data);
+
+    // Also emit the updated roster in the same shape as the initial snapshot.
+    // Without this, `presence` fired exactly once - at subscribe - so any app
+    // rendering occupancy or a roster from it was frozen at the moment it
+    // joined and never saw anyone arrive or leave. `occupancy` comes from the
+    // server, which is authoritative across the whole cluster.
+    this.emit('presence', {
+      channel: this.name,
+      occupancy: typeof data.occupancy === 'number' ? data.occupancy : this.presence.size,
+      occupants: Array.from(this.presence.values())
+    });
   }
   
   /**
