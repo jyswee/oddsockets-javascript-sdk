@@ -2,7 +2,7 @@
 
 Official JavaScript/TypeScript SDK for OddSockets real-time messaging platform.
 
-[![npm version](https://badge.fury.io/js/%40oddsocketsai%2Fjavascript-sdk.svg)](https://badge.fury.io/js/%40oddsocketsai%2Fjavascript-sdk)
+[![npm version](https://badge.fury.io/js/oddsockets-js.svg)](https://badge.fury.io/js/oddsockets-js)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
@@ -11,15 +11,15 @@ Official JavaScript/TypeScript SDK for OddSockets real-time messaging platform.
 ### Installation
 
 ```bash
-npm install @oddsocketsai/javascript-sdk
+npm install oddsockets-js
 # or
-yarn add @oddsocketsai/javascript-sdk
+yarn add oddsockets-js
 ```
 
 ### Basic Usage
 
 ```javascript
-import OddSockets from '@oddsocketsai/javascript-sdk';
+import OddSockets from 'oddsockets-js';
 
 // Create client (auto-connects by default)
 const client = new OddSockets({
@@ -242,7 +242,7 @@ try {
 ### 9. TypeScript Usage
 
 ```typescript
-import OddSockets, { Channel } from '@oddsocketsai/javascript-sdk';
+import OddSockets, { Channel } from 'oddsockets-js';
 
 interface MyMessage {
   text: string;
@@ -273,7 +273,7 @@ await channel.publish<MyMessage>({
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="https://prodemedia.tyga.host/npm/@oddsocketsai/javascript-sdk@latest/dist/oddsockets.min.js"></script>
+  <script src="https://prodmedia.tyga.host/public/npm/@oddsocketsai/javascript-sdk@latest/dist/oddsockets.min.js"></script>
 </head>
 <body>
   <script>
@@ -303,7 +303,7 @@ methods return a `Promise` that resolves with the worker's response. The matchin
 react with `client.on('<event>', handler)`.
 
 ```javascript
-import OddSockets from '@oddsocketsai/javascript-sdk';
+import OddSockets from 'oddsockets-js';
 
 const client = new OddSockets({ apiKey: 'your-api-key', userId: 'alice' });
 await client.connect();
