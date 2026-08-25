@@ -1,8 +1,27 @@
 import { EventEmitter } from 'eventemitter3';
 
+export interface OddSocketsToken {
+  token: string;
+  expiresAt?: string | number;
+  exp?: number;
+  baseUrl?: string;
+}
+
+export type OddSocketsTokenProvider = () => Promise<OddSocketsToken | string>;
+
 export interface OddSocketsConfig {
-  apiKey: string;
-  managerUrl: string;
+  /** Your OddSockets API key. Omit when authenticating with a tokenProvider instead. */
+  apiKey?: string;
+  /**
+   * Async callback returning a fresh minted realtime token, used INSTEAD of an apiKey
+   * by game clients that exchange a player JWT for a short-lived scoped token via the
+   * OddSockets /v1/token front door. Called before every (re)connect and again shortly
+   * before the token expires. (FEAT-2026-0824-0040)
+   */
+  tokenProvider?: OddSocketsTokenProvider;
+  /** Refresh a minted token this many milliseconds before it expires. Default 120000. */
+  tokenRefreshLeadMs?: number;
+  managerUrl?: string;
   userId?: string;
   options?: any;
   autoConnect?: boolean;
@@ -106,6 +125,7 @@ export declare class OddSockets extends EventEmitter {
   on(event: 'reconnecting', listener: (data: { attempt: number; maxAttempts: number; delay: number }) => void): this;
   on(event: 'max_reconnect_attempts_reached', listener: () => void): this;
   on(event: 'worker_assigned', listener: (data: { workerId: string; workerUrl: string; session?: SessionInfo; clientIdentifier: string }) => void): this;
+  on(event: 'token_refreshed', listener: (data: { expiresAt: number | null }) => void): this;
   on(event: string, listener: (...args: any[]) => void): this;
 }
 

@@ -65,6 +65,41 @@ const client = new OddSockets({
 await client.connect();
 ```
 
+Provide **either** `apiKey` **or** `tokenProvider`.
+
+#### Token auth for game clients (`tokenProvider`)
+
+Game and browser clients should never ship a raw API key. Instead, exchange the
+player's own signed JWT for a short-lived, scoped OddSockets token at the
+OddSockets token front door, and hand the SDK a `tokenProvider` callback that
+returns it. The SDK presents the token on the connection handshake and **silently
+refreshes it** — both shortly before it expires and on every reconnect — so the
+connection never lapses.
+
+```javascript
+const client = new OddSockets({
+  userId: 'player_42',
+  // Called for every (re)connect and by the pre-expiry refresh timer.
+  // Return the token string, or { token, expiresAt } (expiresAt: ISO-8601 or epoch).
+  tokenProvider: async () => {
+    const res = await fetch('https://connect.oddsockets.tyga.network/v1/token', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${myPlayerJwt}`, // the player's own signed game JWT
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ channels: ['match:9', 'lobby'] }) // optional least-privilege scoping
+    });
+    return res.json(); // { token, expiresAt, ... }
+  },
+  tokenRefreshLeadMs: 120000 // Optional: refresh this long before expiry (default 2 min)
+});
+
+client.on('token_refreshed', ({ expiresAt }) => {
+  // Optional: observe silent refreshes.
+});
+```
+
 ### 2. Connection Events
 
 ```javascript

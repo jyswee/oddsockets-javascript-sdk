@@ -15,24 +15,36 @@ class OddSockets extends EventEmitter {
   /**
    * Create an OddSockets client
    * @param {Object} config - Configuration options
-   * @param {string} config.apiKey - Your OddSockets API key
+   * @param {string} [config.apiKey] - Your OddSockets API key. Omit when using tokenProvider.
+   * @param {Function} [config.tokenProvider] - Async callback returning a fresh minted
+   *   realtime token, used INSTEAD of an apiKey by game clients that exchange a player
+   *   JWT for a short-lived scoped token via the OddSockets /v1/token front door. Called
+   *   before every (re)connect and again shortly before the token expires. May resolve to
+   *   a token string or an object {token, expiresAt, exp, baseUrl}. (FEAT-2026-0824-0040)
+   * @param {number} [config.tokenRefreshLeadMs=120000] - Refresh a minted token this many
+   *   milliseconds before it expires.
    * @param {string} [config.userId] - User ID (defaults to API key's user)
    * @param {Object} [config.options] - Additional connection options
    */
   constructor(config) {
     super();
-    
-    if (!config || !config.apiKey) {
-      throw new Error('API key is required');
+
+    // Either a static API key OR an async tokenProvider callback is required.
+    // Game clients (front-door auth) carry no API key: they exchange a player
+    // JWT for a short-lived minted realtime token via tokenProvider. (FEAT-2026-0824-0040)
+    if (!config || (!config.apiKey && typeof config.tokenProvider !== 'function')) {
+      throw new Error('Either an API key or a tokenProvider callback is required');
     }
-    
+
     this.config = {
       apiKey: config.apiKey,
+      tokenProvider: config.tokenProvider,
+      tokenRefreshLeadMs: config.tokenRefreshLeadMs || 120000,
       userId: config.userId,
       managerUrl: config.managerUrl,
       options: config.options || {}
     };
-    
+
     this.socket = null;
     this.workerUrl = null;
     this.workerId = null;
@@ -43,6 +55,10 @@ class OddSockets extends EventEmitter {
     this.reconnectDelay = 1000; // Start with 1 second
     this.clientIdentifier = this._generateClientIdentifier();
     this.sessionInfo = null;
+    // Minted-token state (token mode only). (FEAT-2026-0824-0040)
+    this._token = null;
+    this._tokenExpiresAt = null;
+    this._tokenRefreshTimer = null;
     
     // Initialize enhanced features (67 new Slack-like events)
     this.enhanced = new EnhancedFeatures(this);
@@ -93,9 +109,16 @@ class OddSockets extends EventEmitter {
     this.emit('connecting');
     
     try {
+      // Step 0: In token mode, mint/refresh a realtime token before every
+      // (re)connect so the worker assignment and handshake carry a fresh
+      // credential rather than an API key. (FEAT-2026-0824-0040)
+      if (this._isTokenMode()) {
+        await this._resolveToken();
+      }
+
       // Step 1: Get worker assignment from manager
       await this._getWorkerAssignment();
-      
+
       // Step 2: Connect to assigned worker
       await this._connectToWorker();
       
@@ -127,12 +150,18 @@ class OddSockets extends EventEmitter {
    */
   disconnect() {
     this.connectionState = 'disconnected';
-    
+
+    // Stop any pending minted-token refresh. (FEAT-2026-0824-0040)
+    if (this._tokenRefreshTimer) {
+      clearTimeout(this._tokenRefreshTimer);
+      this._tokenRefreshTimer = null;
+    }
+
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
     }
-    
+
     this.workerUrl = null;
     this.workerId = null;
     this.emit('disconnected');
@@ -235,13 +264,21 @@ class OddSockets extends EventEmitter {
         this.config.apiKey,
         this.config.managerUrl
       );
-      
+
+      // In token mode present the minted token (not an API key) to the manager.
+      // (FEAT-2026-0824-0040 / FEAT-2026-0824-0041)
+      const selectParams = {
+        userId: this.config.userId || this.clientIdentifier,
+        clientIdentifier: this.clientIdentifier
+      };
+      if (this._isTokenMode()) {
+        selectParams.token = this._token;
+      } else {
+        selectParams.apiKey = this.config.apiKey;
+      }
+
       const response = await axios.get(`${managerUrl}/api/cluster/select-worker`, {
-        params: {
-          apiKey: this.config.apiKey,
-          userId: this.config.userId || this.clientIdentifier,
-          clientIdentifier: this.clientIdentifier
-        },
+        params: selectParams,
         headers: {
           'User-Agent': 'OddSockets-JS-SDK/1.0.0'
         },
@@ -284,10 +321,12 @@ class OddSockets extends EventEmitter {
     
     return new Promise((resolve, reject) => {
       const socketOptions = {
-        auth: {
-          apiKey: this.config.apiKey,
-          userId: this.config.userId
-        },
+        // Present the minted token at the Socket.IO handshake in token mode; the
+        // worker verifies auth.token (FEAT-2026-0824-0039). Otherwise send the
+        // API key as before. (FEAT-2026-0824-0040)
+        auth: this._isTokenMode()
+          ? { token: this._token, userId: this.config.userId }
+          : { apiKey: this.config.apiKey, userId: this.config.userId },
         transports: ['websocket', 'polling'],
         timeout: 10000,
         ...this.config.options
@@ -443,10 +482,124 @@ class OddSockets extends EventEmitter {
    * @private
    */
   _generateClientIdentifier() {
-    // Create a consistent identifier based on API key and user ID
+    // Create a consistent identifier based on API key and user ID. Token-mode
+    // clients carry no API key, so fall back to a stable seed. (FEAT-2026-0824-0040)
     const baseId = this.config.userId || 'default';
-    const apiKeyHash = this._hashString(this.config.apiKey);
+    const seed = this.config.apiKey || 'token-client';
+    const apiKeyHash = this._hashString(seed);
     return `${apiKeyHash}_${baseId}`;
+  }
+
+  /**
+   * Internal: is this client authenticating with a minted token (vs an API key)?
+   * @private
+   */
+  _isTokenMode() {
+    return typeof this.config.tokenProvider === 'function';
+  }
+
+  /**
+   * Internal: call the configured tokenProvider, cache the fresh token and its
+   * expiry, and schedule a refresh ahead of expiry. (FEAT-2026-0824-0040)
+   * @private
+   */
+  async _resolveToken() {
+    const result = await this.config.tokenProvider();
+    if (!result) {
+      throw new Error('tokenProvider returned no token');
+    }
+
+    // Accept either a bare token string or a {token, expiresAt, exp} object,
+    // mirroring the OddSockets /v1/token mint response shape.
+    let token;
+    let expiresAtMs = null;
+    if (typeof result === 'string') {
+      token = result;
+    } else {
+      token = result.token;
+      if (result.expiresAt !== undefined && result.expiresAt !== null) {
+        if (typeof result.expiresAt === 'number') {
+          // < 1e12 ⇒ epoch seconds, else already milliseconds.
+          expiresAtMs = result.expiresAt < 1e12
+            ? result.expiresAt * 1000
+            : result.expiresAt;
+        } else {
+          const parsed = Date.parse(result.expiresAt);
+          if (!Number.isNaN(parsed)) expiresAtMs = parsed;
+        }
+      } else if (typeof result.exp === 'number') {
+        expiresAtMs = result.exp * 1000;
+      }
+    }
+
+    if (!token || typeof token !== 'string') {
+      throw new Error('tokenProvider returned an invalid token');
+    }
+
+    // Fall back to the JWT's own exp claim if the provider gave no expiry.
+    if (expiresAtMs === null) {
+      expiresAtMs = this._expiryFromJwt(token);
+    }
+
+    this._token = token;
+    this._tokenExpiresAt = expiresAtMs;
+    this._scheduleTokenRefresh();
+  }
+
+  /**
+   * Internal: extract exp (epoch ms) from a JWT payload without verifying it.
+   * Browser-safe base64url decode (no Node Buffer). Returns null on failure.
+   * @private
+   */
+  _expiryFromJwt(token) {
+    try {
+      const part = token.split('.')[1];
+      if (!part) return null;
+      let b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const json = typeof atob === 'function'
+        ? atob(b64)
+        : Buffer.from(b64, 'base64').toString('binary');
+      const payload = JSON.parse(json);
+      return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /**
+   * Internal: schedule a one-shot refresh that re-mints the token shortly before
+   * it expires and swaps it into the live socket handshake auth in place, with no
+   * reconnect. Emits 'token_refreshed' on success, 'error' on failure. (FEAT-2026-0824-0040)
+   * @private
+   */
+  _scheduleTokenRefresh() {
+    if (this._tokenRefreshTimer) {
+      clearTimeout(this._tokenRefreshTimer);
+      this._tokenRefreshTimer = null;
+    }
+    if (!this._tokenExpiresAt) return;
+
+    const lead = this.config.tokenRefreshLeadMs;
+    const delay = this._tokenExpiresAt - Date.now() - lead;
+    if (delay <= 0) return; // Too close to expiry to usefully schedule; next connect re-resolves.
+
+    this._tokenRefreshTimer = setTimeout(async () => {
+      try {
+        await this._resolveToken();
+        if (this.socket) {
+          this.socket.auth = { ...this.socket.auth, token: this._token };
+        }
+        this.emit('token_refreshed', { expiresAt: this._tokenExpiresAt });
+      } catch (error) {
+        this.emit('error', error);
+      }
+    }, delay);
+
+    // Don't keep the Node process alive just for a refresh timer (no-op in browser).
+    if (this._tokenRefreshTimer && typeof this._tokenRefreshTimer.unref === 'function') {
+      this._tokenRefreshTimer.unref();
+    }
   }
   
   /**
