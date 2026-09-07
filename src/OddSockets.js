@@ -207,7 +207,52 @@ class OddSockets extends EventEmitter {
       workerUrl: this.workerUrl
     };
   }
-  
+
+  /**
+   * Fetch this tenant's headline usage tiles (MAU / DAU / total messages /
+   * error-rate) for the account that owns the configured API key.
+   *
+   * Server contract: GET {managerUrl}/api/tenant/usage with the X-API-Key
+   * header. Requires an apiKey — keyless/token-only clients have no owner key
+   * to scope by, so this throws for them.
+   *
+   * HONESTY: any tile the server can't compute yet comes back as null. This
+   * method preserves null verbatim (it never coerces to 0) so callers can
+   * render an em-dash instead of a fabricated zero.
+   *
+   * @returns {Promise<{mau:(number|null), dau:(number|null), totalMessages:(number|null), errorRate:(number|null), ownerScope:string, detail:Object, timestamp:string}>}
+   */
+  async getUsageStats() {
+    if (this._isTokenMode() || !this.config.apiKey) {
+      throw new Error('getUsageStats requires an apiKey (keyless/token clients have no owner scope to query)');
+    }
+
+    const managerUrl = await managerDiscovery.discoverManagerUrl(
+      this.config.apiKey,
+      this.config.managerUrl
+    );
+
+    const response = await axios.get(`${managerUrl}/api/tenant/usage`, {
+      headers: {
+        'X-API-Key': this.config.apiKey,
+        'User-Agent': 'OddSockets-JS-SDK/1.0.0'
+      },
+      timeout: 10000
+    });
+
+    const data = response.data || {};
+    const tiles = data.tiles || {};
+    return {
+      mau: tiles.mau ?? null,
+      dau: tiles.dau ?? null,
+      totalMessages: tiles.totalMessages ?? null,
+      errorRate: tiles.errorRate ?? null,
+      ownerScope: data.ownerScope,
+      detail: data.detail || null,
+      timestamp: data.timestamp
+    };
+  }
+
   /**
    * Publish multiple messages at once
    * @param {Array} messages - Array of message objects with {channel, message, options?} structure

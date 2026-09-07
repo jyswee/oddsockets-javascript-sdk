@@ -32,6 +32,20 @@ export interface WorkerInfo {
   workerUrl: string;
 }
 
+export interface UsageStats {
+  /** Monthly active users, or null if the server can't compute it yet. */
+  mau: number | null;
+  /** Daily active users, or null. */
+  dau: number | null;
+  /** Total messages published, or null. */
+  totalMessages: number | null;
+  /** Error rate (0-1), or null. */
+  errorRate: number | null;
+  ownerScope: string;
+  detail: Record<string, unknown> | null;
+  timestamp: string;
+}
+
 export interface SessionInfo {
   isExisting?: boolean;
   ageMs?: number;
@@ -116,6 +130,8 @@ export declare class OddSockets extends EventEmitter {
   getSessionInfo(): SessionInfo | null;
   
   publishBulk(messages: BulkMessage[]): Promise<BulkResult[]>;
+
+  getUsageStats(): Promise<UsageStats>;
   
   // Events
   on(event: 'connecting', listener: () => void): this;
