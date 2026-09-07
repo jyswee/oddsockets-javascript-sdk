@@ -1,6 +1,6 @@
 {
   "name": "oddsockets-js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Official JavaScript/TypeScript SDK for OddSockets real-time messaging platform",
   "main": "dist/oddsockets.min.js",
   "browser": {
