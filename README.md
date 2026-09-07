@@ -38,7 +38,7 @@ channel.subscribe((message) => {
 channel.publish('Hello, World!');
 ```
 
-> **Need an API Key?** [Sign up for free at https://oddsockets.com/signup](https://oddsockets.com/signup) to get your API key and start building real-time applications.
+> **Need an API Key?** [Sign up at https://oddsockets.com/signup](https://oddsockets.com/signup) — every plan starts with a 7-day free trial and your key works instantly (see [Get an API Key](#get-an-api-key)).
 
 ## 📖 How To Use
 
@@ -397,40 +397,30 @@ const results   = await client.enhanced.searchMessages({ query: 'launch', userId
 - **Max attempts**: Configurable retry limits
 - **State preservation**: Maintains subscriptions across reconnects
 
-## Get a Free API Key
+## Get an API Key
 
-AI agents can sign up with a verified email in two steps — no dashboard, no human required.
+No free tier — every plan starts with a 7-day free trial (nothing is charged
+during the trial). Signup issues a working API key instantly; the key runs
+keyless for 48 hours, and adding a card within that window extends it through
+the trial.
 
-**Step 1:** Request a verification code
+Scriptable signup (CLI):
+
 ```bash
-curl -X POST https://oddsockets.com/api/agent-signup \
-  -H "Content-Type: application/json" \
-  -d '{"email": "you@example.com", "agentName": "my-agent", "platform": "claude"}'
+npm i -g oddsockets-cli
+oddsockets plans                                  # list live plan ids
+oddsockets signup you@studio.com --plan oddsockets-starter
+oddsockets publish smoke-test '{"hello":"world"}' # verify in one line
 ```
 
-**Step 2:** Verify the 6-digit code from your email and get your API key
-```bash
-curl -X POST https://oddsockets.com/api/agent-signup/verify \
-  -H "Content-Type: application/json" \
-  -d '{"email": "you@example.com", "code": "123456", "agentName": "my-agent"}'
-```
+AI agents can also self-provision via MCP: connect to
+`https://mcp.oddsockets.ai/sse` and call `oddsockets_signup`.
 
 ## Plans
 
-| | Free | Starter | Pro |
-|---|---|---|---|
-| **Price** | $0/mo | $49.99/mo | $299/mo |
-| **MAU** | 100 | 1,000 | 50,000 |
-| **Concurrent connections** | 50 | 1,000 | Unlimited |
-| **Messages/day** | 10,000 | 4,320,000 | Unlimited |
-| **Messages/minute** | 100 | 3,000 | Unlimited |
-| **Channels** | 10 | Unlimited | Unlimited |
-| **Storage** | 100MB (24h) | 50GB (6 months) | Unlimited |
-| **Webhooks** | No | Yes | Yes |
-| **Analytics** | No | Yes | Yes |
-| **Support** | Community | 24/5 email & chat | Dedicated team |
+`oddsockets-starter` $29/mo · `oddsockets-pro` $99/mo · `oddsockets-scale` $299/mo · `oddsockets-enterprise` (contact us)
 
-All limits are enforced in real time. When a limit is reached, the SDK receives a `RATE_LIMIT_EXCEEDED` error with a `retryAfter` value.
+See [oddsockets.com/pricing](https://oddsockets.com/pricing) for current limits per tier. All limits are enforced in real time; when a limit is reached, the SDK receives a `RATE_LIMIT_EXCEEDED` error with a `retryAfter` value.
 
 ## Get Accredited
 
@@ -442,7 +432,7 @@ Prove you can build and operate real-time features on OddSockets — channels, p
 
 ## Support
 
-- [Documentation](https://docs.oddsockets.com/sdks/javascript)
+- [Documentation](https://docs.oddsockets.com/javascript/docs/)
 - [Issue Tracker](https://github.com/jyswee/oddsockets-javascript-sdk/issues)
 - [Email Support](mailto:support@oddsockets.com)
 
