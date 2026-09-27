@@ -93,7 +93,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOption
 // API routes for interactive examples
 app.get('/api/sdk/info', (req, res) => {
   res.json({
-    name: '@oddsockets/javascript-sdk',
+    name: 'oddsockets-js',
     version: '1.0.0',
     description: 'Official JavaScript SDK for OddSockets real-time messaging',
     features: [
@@ -106,16 +106,16 @@ app.get('/api/sdk/info', (req, res) => {
       'Session stickiness'
     ],
     benefits: [
-      '50% lower latency than PubNub',
-      'No message size limits',
-      'No per-message pricing',
-      'Richer metadata support',
-      'Built-in analytics',
-      'Self-hosted option'
+      'No per-message pricing - a monthly message allowance',
+      '32 KB maximum message size',
+      'Per-message TTL and custom metadata',
+      'Retained message history',
+      'Built-in usage analytics',
+      'Automatic failover and resubscribe'
     ],
-    installation: 'npm install @oddsocketsai/javascript-sdk',
+    installation: 'npm install oddsockets-js',
     repository: 'https://github.com/jyswee/oddsockets-javascript-sdk',
-    documentation: 'https://docs.oddsockets.com/sdks/javascript'
+    documentation: 'https://docs.oddsockets.com/javascript/docs/'
   });
 });
 
@@ -311,12 +311,11 @@ app.post('/sdk/pubnub/create', (req, res) => {
       from: 'PubNub',
       to: 'OddSockets',
       benefits: [
-        '50% lower latency',
-        'No message limits',
-        'No per-message pricing',
-        'Richer metadata',
-        'Built-in analytics',
-        'Self-hosted option'
+        'No per-message pricing - a monthly message allowance',
+        '32 KB maximum message size',
+        'Per-message TTL and custom metadata',
+        'Built-in usage analytics',
+        'Automatic failover, reconnect and resubscribe'
       ]
     },
     config: {
@@ -343,7 +342,7 @@ app.get('/sdk/examples/chat-app', (req, res) => {
       'Error handling'
     ],
     code: `
-const OddSockets = require('@oddsockets/javascript-sdk');
+const OddSockets = require('oddsockets-js');
 
 class ChatApp {
   constructor(apiKey, userId) {
@@ -447,7 +446,7 @@ pubnub.publish({
       `,
       after: `
 // OddSockets (AFTER) - Same API!
-const { PubNubCompat } = require('@oddsockets/javascript-sdk');
+const { PubNubCompat } = require('oddsockets-js');
 const pubnub = new PubNubCompat({
   publishKey: 'ak_live_1234567890abcdef',    // Your OddSockets API key
   subscribeKey: 'ak_live_1234567890abcdef',  // Same as publishKey
@@ -476,13 +475,11 @@ pubnub.publish({
         'Add optional managerUrl if needed'
       ],
       benefits: [
-        '50% lower latency than PubNub',
-        'No message size limits',
-        'No per-message pricing',
-        'Richer message metadata',
-        'Built-in analytics and monitoring',
-        'Self-hosted deployment option',
-        'Better error handling and reconnection'
+        'No per-message pricing - a monthly message allowance',
+        '32 KB maximum message size',
+        'Per-message TTL and custom metadata',
+        'Built-in usage analytics and monitoring',
+        'Automatic failover, reconnect and resubscribe'
       ]
     }
   });

@@ -20,7 +20,7 @@
  * OddSockets constructor and runs on socket.io-client just like the browser.
  *
  * Usage:
- *   export ODDSOCKETS_API_KEY="ak_live_..."   # get a free key: see README
+ *   export ODDSOCKETS_API_KEY="ak_live_..."   # get an API key: see README
  *   node demo/demo-node.js
  *
  * Exits 0 on a verified cross-client round-trip, non-zero on failure/timeout.

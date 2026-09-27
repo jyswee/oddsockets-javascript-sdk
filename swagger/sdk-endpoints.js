@@ -11,7 +11,7 @@
  *       
  *       **Code Example:**
  *       ```javascript
- *       const OddSockets = require('@oddsockets/javascript-sdk');
+ *       const OddSockets = require('oddsockets-js');
  *       
  *       const client = new OddSockets({
  *         apiKey: 'ak_live_1234567890abcdef',
@@ -574,7 +574,7 @@
  *     summary: Create PubNub-Compatible Client
  *     description: |
  *       Create a PubNub-compatible client for easy migration from PubNub to OddSockets.
- *       This provides the exact same API as PubNub but with better performance and features.
+ *       The compatibility layer keeps your existing call shapes, so you swap the keys, not the code.
  *       
  *       **Migration Example:**
  *       ```javascript
@@ -585,7 +585,7 @@
  *       });
  *       
  *       // NEW: OddSockets (same API!)
- *       const { PubNubCompat } = require('@oddsockets/javascript-sdk');
+ *       const { PubNubCompat } = require('oddsockets-js');
  *       const pubnub = new PubNubCompat({
  *         publishKey: 'ak_live_1234567890abcdef',
  *         subscribeKey: 'ak_live_1234567890abcdef'
@@ -635,10 +635,10 @@
  *                       items:
  *                         type: string
  *                       example:
- *                         - "50% lower latency"
- *                         - "No message limits"
  *                         - "No per-message pricing"
- *                         - "Richer metadata"
+ *                         - "32 KB maximum message size"
+ *                         - "Per-message TTL and custom metadata"
+ *                         - "Built-in usage analytics"
 
  * /sdk/examples/chat-app:
  *   get:

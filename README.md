@@ -378,7 +378,7 @@ const results   = await client.enhanced.searchMessages({ query: 'launch', userId
 ## Advanced Features
 
 ### Message Size Limits
-- **Maximum message size**: 32KB (industry standard)
+- **Maximum message size**: 32KB, enforced server-side
 - **Automatic validation**: SDK validates message size before sending
 - **UTF-8 encoding**: Proper byte counting for international characters
 

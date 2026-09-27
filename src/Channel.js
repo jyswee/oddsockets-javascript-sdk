@@ -1,7 +1,7 @@
 const EventEmitter = require('eventemitter3');
 
 /**
- * Message size limits (industry standard - matches PubNub)
+ * Platform message size limit, enforced server-side
  */
 const MESSAGE_SIZE_LIMITS = {
   MAX_MESSAGE_SIZE: 32768, // 32KB in bytes
@@ -20,7 +20,7 @@ function validateMessageSize(message) {
   if (messageSize > MESSAGE_SIZE_LIMITS.MAX_MESSAGE_SIZE) {
     throw new Error(
       `Message size (${Math.round(messageSize / 1024)}KB) exceeds maximum allowed size of ${MESSAGE_SIZE_LIMITS.MAX_MESSAGE_SIZE_KB}KB. ` +
-      `This limit matches industry standards (PubNub, Socket.IO) for reliable real-time messaging.`
+      `Split the payload, or publish a reference to it instead.`
     );
   }
   

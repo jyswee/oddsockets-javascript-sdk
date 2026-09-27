@@ -11,25 +11,24 @@ const swaggerDefinition = {
 The OddSockets JavaScript SDK provides a simple, powerful interface for real-time messaging that **automatically handles the Manager → Worker cluster architecture** behind the scenes.
 
 ### Key Benefits
-- **Zero Complexity**: No need to understand load balancing
-- **PubNub Compatible**: Drop-in replacement for PubNub
-- **Automatic Failover**: Built-in reconnection and error handling
-- **Session Stickiness**: Consistent worker assignments
-- **Better Performance**: 50% lower latency than PubNub
-- **Cost Effective**: No per-message pricing
+- **Zero Complexity**: Connect with an API key; routing is handled for you
+- **Automatic Failover**: Built-in reconnection, resubscribe and error handling
+- **Session Stickiness**: Consistent node assignment for the life of a connection
+- **Rich Envelopes**: Per-message TTL, custom metadata and retained history
+- **Cost Effective**: No per-message pricing - a monthly message allowance
 
 ## Quick Start
 
 ### Installation
 \`\`\`bash
-npm install @oddsockets/javascript-sdk
+npm install oddsockets-js
 # or
-yarn add @oddsockets/javascript-sdk
+yarn add oddsockets-js
 \`\`\`
 
 ### Basic Usage
 \`\`\`javascript
-const OddSockets = require('@oddsockets/javascript-sdk');
+const OddSockets = require('oddsockets-js');
 
 const client = new OddSockets({
   apiKey: 'ak_live_1234567890abcdef'
@@ -52,7 +51,7 @@ const pubnub = new PubNub({
 });
 
 // With this:
-const { PubNubCompat } = require('@oddsockets/javascript-sdk');
+const { PubNubCompat } = require('oddsockets-js');
 const pubnub = new PubNubCompat({
   publishKey: 'ak_live_1234567890abcdef',
   subscribeKey: 'ak_live_1234567890abcdef'

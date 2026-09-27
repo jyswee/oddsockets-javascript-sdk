@@ -10,7 +10,7 @@ this doubles as an honest end-to-end regression test (no mocks, no local echo).
 > Runs on Node 18+ (uses the shipped UMD bundle + `socket.io-client`). A no-build
 > browser version is in [`index.html`](./index.html).
 
-## 1. Get a free API key
+## 1. Get an API key
 
 Two-step email verification (no card required):
 

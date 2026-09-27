@@ -141,13 +141,13 @@ async function migrationExample() {
   }
   
   // Demonstrate additional OddSockets features
-  console.log('🚀 OddSockets provides additional benefits:');
-  console.log('  • 50% lower latency than PubNub');
-  console.log('  • No message size limits');
-  console.log('  • No per-message pricing');
-  console.log('  • Richer message metadata');
-  console.log('  • Built-in analytics');
-  console.log('  • Self-hosted option');
+  console.log('🚀 OddSockets provides:');
+  console.log('  • No per-message pricing - a monthly message allowance');
+  console.log('  • 32 KB maximum message size');
+  console.log('  • Per-message TTL and custom metadata');
+  console.log('  • Retained message history');
+  console.log('  • Built-in usage analytics');
+  console.log('  • Automatic failover, reconnect and resubscribe');
   
   // Migration checklist
   console.log('\n📋 Migration Checklist:');
