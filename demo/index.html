@@ -143,9 +143,6 @@
 
                 client.on('connecting', function () { log('Connecting to OddSockets...'); });
                 client.on('connected', function () { log('Connected.'); });
-                client.on('worker_assigned', function (data) {
-                    log('Worker assigned: ' + data.workerId);
-                });
                 client.on('error', function (error) {
                     log('Error: ' + (error && error.message ? error.message : error));
                 });

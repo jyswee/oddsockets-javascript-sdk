@@ -39,8 +39,6 @@ Expected output:
 
 ```
 Connecting both clients...
-[alice] worker: [instance]
-[bob]   worker: [instance]
 Both connected.
 [alice] subscribed to "demo-yh4nc2nz" (presence on).
 [bob] publishing (nonce 4wlzemk5eblmruwl4a2)...

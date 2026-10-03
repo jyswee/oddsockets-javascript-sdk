@@ -82,8 +82,6 @@ async function main() {
     subscriber = new OddSockets({ apiKey: apiKey, userId: 'alice', managerUrl: MANAGER_URL });
     publisher  = new OddSockets({ apiKey: apiKey, userId: 'bob',   managerUrl: MANAGER_URL });
 
-    subscriber.on('worker_assigned', function (d) { log('[alice] worker: ' + d.workerId); });
-    publisher.on('worker_assigned',  function (d) { log('[bob]   worker: ' + d.workerId); });
     subscriber.on('error', function (e) { log('[alice] error: ' + (e && e.message ? e.message : e)); });
     publisher.on('error',  function (e) { log('[bob]   error: ' + (e && e.message ? e.message : e)); });
 
